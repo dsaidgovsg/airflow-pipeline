@@ -1,0 +1,4 @@
+teamcity-messages==1.17
+pylint==1.5.6
+pytest==2.9.2
+py2neo==3.1.2

@@ -1,0 +1,5 @@
+version: '2'
+services:
+  airflow:
+    volumes:
+      - ./dags:/airflow/dags

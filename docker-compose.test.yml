@@ -1,0 +1,12 @@
+version: '2'
+services:
+  pipeline_tests:
+    container_name: pipeline_tests
+    build:
+      context: .
+      dockerfile: Dockerfile-tests
+    environment:
+      TEAMCITY_VERSION:
+      TZ: "Asia/Singapore"
+    volumes:
+      - ./tmp:/usr/src/app/tmp

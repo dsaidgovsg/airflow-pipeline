@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+.cache/
+.idea/
+
+.ipynb_checkpoints/
+*.ipynb
+
+tmp/

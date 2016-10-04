@@ -1,0 +1,15 @@
+FROM datagovsg/python-spark-airflow:1.7
+MAINTAINER Chris Sng <chris@data.gov.sg>
+
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+COPY tests/requirements.txt /usr/src/app/requirements-test.txt
+RUN pip install --no-cache-dir -r requirements-test.txt
+
+COPY requirements.txt /usr/src/app/requirements-dags.txt
+RUN pip install --no-cache-dir -r requirements-dags.txt
+
+COPY . /usr/src/app
+
+ENTRYPOINT ["/usr/src/app/test.sh"]
