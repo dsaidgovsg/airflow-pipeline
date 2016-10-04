@@ -11,7 +11,7 @@ To change the environment variables, edit `docker-compose.yml` instead of `Docke
 
 To bring the containers up for development, use `docker-compose up --build -d`. The `docker-compose.override.yml` file will create a volume at `./airflow/dags` and mounted in the container at `/airflow/dags`, allowing you to do edit the DAG files directly on your development machine and having them updated with the container immediately.
 
-To deploy, use only the `docker-compose.yml` file i.e. `docker-compose -f docker-compose.yml up --build -d`
+To deploy, use only the `docker-compose.yml` file i.e. `docker-compose -p afp -f docker-compose.yml up --build -d`
 
 
 ## Environment dependencies for deployment (in Docker images)
@@ -51,7 +51,7 @@ To follow docker logs, use `docker-compose -f docker-compose.yml logs --tail=10 
 ## Accessing the docker container
 1. Ensure that container is deployed on your server
 2. SSH into server
-3. Access the container's bash shell: `docker exec -ti pipeline_airflow_1 bash`
+3. Access the container's bash shell: `docker exec -ti afp_airflow_1 bash`
 4. Change user to afpuser: `gosu afpuser bash`
 
 #### To backfill DAGs
