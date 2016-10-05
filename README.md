@@ -14,17 +14,15 @@ To bring the containers up for development, use `docker-compose up --build -d`. 
 To deploy, use only the `docker-compose.yml` file i.e. `docker-compose -p afp -f docker-compose.yml up --build -d`
 
 
-## Environment dependencies for deployment (in Docker images)
+## What this gives you
 
-This docker image depends on [`datagovsg/python-spark-airflow:1.7`](https://hub.docker.com/r/datagovsg/python-spark-airflow/) image which depends on [`datagovsg/python-spark:2.7-1.6.1`](https://hub.docker.com/r/datagovsg/python-spark/). See their respective docker files to know where the dependencies are loaded.
+This docker image is based off [`datagovsg/python-spark-airflow:1.7`](https://hub.docker.com/r/datagovsg/python-spark-airflow/) image which is based off [`datagovsg/python-spark:2.7-1.6.1`](https://hub.docker.com/r/datagovsg/python-spark/). See their respective docker files to know where they are installed.
 
 - Python 2.7
 - Spark 1.6.1
 - Hadoop 2.6.1
-- Sqoop 1.4.6
-- PostgreSQL, MySQL and MS SQL JDBC connectors
-- PostgreSQL 9.5
-- Airflow 1.7
+- Sqoop 1.4.6 (with JDBC connectors for PostgreSQL, MySQL and SQL Server)
+- Airflow 1.7 (with PostgreSQL 9.5)
 
 
 ## Hadoop configuration
@@ -35,7 +33,13 @@ Since the docker user is `afpuser` and group is `afpgroup`, see [Dockerfile](Doc
 
 #### Hadoop client configuration files
 
+To write to HDFS and connect to the YARN ResourceManager, the (client side) configuration files for the Hadoop cluster must be added.
+
 Obtain from your Hadoop administrator and place in `./hadoop*` directory. Note the environment variables that might be overwritten. e.g. Overriding `HADOOP_MAPRED_HOME` in `hadoop-env.sh`
+
+The configuration contained in this directory will be distributed to the YARN cluster so that all containers used by the application use the same configuration.
+
+See also http://spark.apache.org/docs/latest/running-on-yarn.html
 
 
 ## Tests
