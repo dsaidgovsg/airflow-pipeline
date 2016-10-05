@@ -51,8 +51,7 @@ COPY dags/ ${AIRFLOW_DAG}
 COPY install_spark_packages.py ${AIRFLOW_HOME}/install_spark_packages.py
 RUN gosu "${USER}" python install_spark_packages.py
 
-COPY docker-entrypoint.sh ${AIRFLOW_HOME}/docker-entrypoint.sh
+COPY entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
-
-CMD ["airflow", "webserver"]
+# CMD ["airflow", "webserver"]
