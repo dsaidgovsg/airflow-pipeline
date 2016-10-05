@@ -1,6 +1,6 @@
 # airflow-pipeline
 
-An Airflow setup that aims to work well with Hadoop and Spark
+An [`Airflow`](https://airflow.incubator.apache.org/) setup that aims to work well with Hadoop and Spark
 
 
 ## Docker image
