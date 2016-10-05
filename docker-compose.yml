@@ -12,7 +12,7 @@ services:
       POSTGRES_PASSWORD: Password123
       POSTGRES_DB: airflow
       TZ: "Asia/Singapore"
-  airflow:
+  scheduler:
     build: .
     network_mode: "host"
     restart: always
@@ -29,6 +29,16 @@ services:
       PYSPARK_PYTHON: /usr/local/bin/python2.7
       PIPELINE_DATA_PATH: hdfs://dsg-cluster-gw01/datasets/finnet
       PIPELINE_DATA_FORMAT: com.databricks.spark.avro
+    command: "afp-scheduler"
+    volumes:
+      - airflow_logs:/airflow/logs
+  webserver:
+    build: .
+    network_mode: "host"
+    restart: always
+    depends_on:
+      - postgres
+    command: "afp-webserver"
     volumes:
       - airflow_logs:/airflow/logs
 volumes:
