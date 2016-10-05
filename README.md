@@ -1,4 +1,4 @@
-# airflow-pipeline
+# airflow-pipeline [![Build Status](https://travis-ci.org/datagovsg/airflow-pipeline.svg?branch=)](https://travis-ci.org/datagovsg/airflow-pipeline)
 
 An [Airflow](https://airflow.incubator.apache.org/) setup that aims to work well with Hadoop and Spark
 
