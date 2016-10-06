@@ -9,9 +9,9 @@ You might have to `docker login` first before you can build any images.
 
 To change the environment variables, edit `docker-compose.yml` instead of `Dockerfile` without the need to rebuild the docker image.
 
-To bring the containers up for development, use `docker-compose up --build -d`. The `docker-compose.override.yml` file will create a volume at `./airflow/dags` and mounted in the container at `/airflow/dags`, allowing you to do edit the DAG files directly on your development machine and having them updated with the container immediately.
-
 To deploy, use only the `docker-compose.yml` file i.e. `docker-compose -p afp -f docker-compose.yml up --build -d`
+
+To bring the containers up for development, use also the `docker-compose.override.yml`. This will additionally create a volume at `./dags` and mounted in the container at `/airflow/dags`, allowing you to do edit the DAG files directly on your development machine and having them updated with the container immediately.
 
 
 ## What this gives you
