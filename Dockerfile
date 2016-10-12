@@ -16,7 +16,8 @@ RUN set -x \
     && apt-get -y autoremove
 
 ENV USER afpuser
-RUN groupadd -r afpgroup && useradd -rmg afpgroup "${USER}"
+ENV GROUP hadoop
+RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
 
 # Number of times the Airflow scheduler will run before it terminates (and restarts)
 ENV SCHEDULER_RUNS=5
@@ -33,7 +34,7 @@ ENV POSTGRES_PASSWORD=Password123
 ENV POSTGRES_DB=airflow
 
 # Example HDFS drop point which PySpark can use to access its datasets
-ENV PIPELINE_DATA_PATH=hdfs://dsg-cluster-node01:8020/datasets/afpgroup
+ENV PIPELINE_DATA_PATH=hdfs://dsg-cluster-node01:8020/datasets/"${GROUP}"
 
 WORKDIR ${AIRFLOW_HOME}
 
