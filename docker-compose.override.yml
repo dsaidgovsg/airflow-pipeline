@@ -1,5 +1,8 @@
 version: '2'
 services:
-  airflow:
+  scheduler:
+    volumes:
+      - ./dags:/airflow/dags
+  webserver:
     volumes:
       - ./dags:/airflow/dags
