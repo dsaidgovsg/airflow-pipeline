@@ -29,7 +29,7 @@ This docker image is based off [`datagovsg/python-spark-airflow:1.7`](https://hu
 
 #### Hadoop user and group
 
-Since the docker user is `afpuser` and group is `afpgroup`, see [Dockerfile](Dockerfile). Therefore, your Hadoop admin should also add the same user and group to your hadoop cluster. Also grant HDFS permissions on `PIPELINE_DATA_PATH` e.g. /dataset/afpgroup
+Since the docker user is `afpuser` and group is `hadoop`, see [Dockerfile](Dockerfile). Therefore, your Hadoop admin should also add the same user and group to your hadoop cluster. Also grant HDFS permissions on `PIPELINE_DATA_PATH` e.g. /datasets/hadoop
 
 #### Hadoop client configuration files
 
