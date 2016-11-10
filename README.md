@@ -50,6 +50,9 @@ The configuration contained in this directory will be distributed to the YARN cl
 
 See also http://spark.apache.org/docs/latest/running-on-yarn.html
 
+## Deployment
+
+In a deployment scenario, since credentials are managed in environment variables, it is recommended that your env file or `docker-compose.production.yml` be stored securely. Do not commit them to any source code repositories.
 
 ## Tests
 
