@@ -3,17 +3,6 @@
 An [Airflow](https://airflow.incubator.apache.org/) setup that aims to work well with Hadoop and Spark
 
 
-## Docker image
-
-You might have to `docker login` first before you can build any images.
-
-To change the environment variables, edit `docker-compose.yml` instead of `Dockerfile` without the need to rebuild the docker image.
-
-To deploy, use only the `docker-compose.yml` file i.e. `docker-compose -p afp -f docker-compose.yml up --build -d`
-
-To bring the containers up for development, use also the `docker-compose.override.yml`. This will additionally create a volume at `./dags` and mounted in the container at `/airflow/dags`, allowing you to do edit the DAG files directly on your development machine and having them updated with the container immediately.
-
-
 ## What this gives you
 
 This docker image is based off [`datagovsg/python-spark-airflow:1.7`](https://hub.docker.com/r/datagovsg/python-spark-airflow/) image which is based off [`datagovsg/python-spark:2.7-1.6.1`](https://hub.docker.com/r/datagovsg/python-spark/). See their respective docker files to know where they are installed.
@@ -50,9 +39,22 @@ The configuration contained in this directory will be distributed to the YARN cl
 
 See also http://spark.apache.org/docs/latest/running-on-yarn.html
 
+
+## Docker image
+
+You might have to `docker login` first before you can build any images.
+
+To change the environment variables, edit `docker-compose.yml` instead of `Dockerfile` without the need to rebuild the docker image.
+
+To start, use only the `docker-compose.yml` file i.e. `docker-compose -p afp -f docker-compose.yml up --build -d` 
+
+To bring the containers up for development, use also the `docker-compose.override.yml`. This will additionally create a volume at `./dags` and mounted in the container at `/airflow/dags`, allowing you to do edit the DAG files directly on your development machine and having them updated with the container immediately.
+
+
 ## Deployment
 
-In a deployment scenario, since credentials are managed in environment variables, it is recommended that your env file or `docker-compose.production.yml` be stored securely. Do not commit them to any source code repositories.
+In a production deployment scenario, since credentials are managed in environment variables, it is recommended that your env file or `docker-compose.production.yml` be stored securely. Do not commit them to any source code repositories.
+
 
 ## Tests
 
