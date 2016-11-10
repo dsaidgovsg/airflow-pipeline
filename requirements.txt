@@ -1,1 +1,2 @@
 future==0.15.2
+flask_bcrypt==0.7.1

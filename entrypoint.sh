@@ -46,6 +46,7 @@ if [ "$1" = 'afp-scheduler' ]; then
 
     (while :; do echo 'Starting scheduler'; gosu "${USER}" airflow scheduler -n ${SCHEDULER_RUNS}; sleep 1; done)
 elif [ "$1" = 'afp-webserver' ]; then
+  python "${AIRFLOW_HOME}"/setup_auth.py
   gosu "${USER}" airflow webserver
 else
   gosu "${USER}" "$@"
