@@ -18,7 +18,7 @@ This docker image is based off [`datagovsg/python-spark-airflow:1.7`](https://hu
 
 Password authentication is enabled as a security mechanism for administering Airflow via its admin UI.
 
-Set `AIRFLOW_USER`, `AIRFLOW_EMAIL` and `AIRFLOW_PASSWORD` under `webserver` service in the docker-compose.yml before starting the container.
+Set `AIRFLOW_USER`, `AIRFLOW_EMAIL` and `AIRFLOW_PASSWORD` under `webserver` service your the docker compose file before starting the container.
 
 Every time the airflow web server starts, it will create the user if it does not exist.
 
@@ -51,9 +51,11 @@ To start, use only the `docker-compose.yml` file i.e. `docker-compose -p afp -f 
 To bring the containers up for development, use also the `docker-compose.override.yml`. This will additionally create a volume at `./dags` and mounted in the container at `/airflow/dags`, allowing you to do edit the DAG files directly on your development machine and having them updated with the container immediately.
 
 
-## Deployment
+## Deploying into production
 
-In a production deployment scenario, since credentials are managed in environment variables, it is recommended that your env file or `docker-compose.production.yml` be stored securely. Do not commit them to any source code repositories.
+Since credentials are managed as environment variables, it is recommended that your env file or `docker-compose.production.yml` be stored securely. Do not commit them to any source code repositories.
+
+In the given `docker-compose.yml`, the environment variables used to store credentials are placeholders only.
 
 
 ## Tests
