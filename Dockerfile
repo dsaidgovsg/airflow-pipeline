@@ -29,8 +29,8 @@ ENV AIRFLOW_DAG_CONCURRENCY=6
 # Airflow uses postgres as its database, following are the examples env vars
 ENV POSTGRES_HOST=localhost
 ENV POSTGRES_PORT=5999
-ENV POSTGRES_USER=postgres
-ENV POSTGRES_PASSWORD=Password123
+ENV POSTGRES_USER=fixme
+ENV POSTGRES_PASSWORD=fixme
 ENV POSTGRES_DB=airflow
 
 # Example HDFS drop point which PySpark can use to access its datasets
@@ -48,6 +48,8 @@ COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
 COPY hadoop-sample/conf/ ${HADOOP_CONF_DIR}/
 COPY dags/ ${AIRFLOW_DAG}
+
+COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
 
 COPY install_spark_packages.py ${AIRFLOW_HOME}/install_spark_packages.py
 RUN gosu "${USER}" python install_spark_packages.py

@@ -25,6 +25,15 @@ This docker image is based off [`datagovsg/python-spark-airflow:1.7`](https://hu
 - Airflow 1.7 (with PostgreSQL 9.5)
 
 
+## Authentication
+
+Password authentication is enabled as a security mechanism for administering Airflow via its admin UI.
+
+Set `AIRFLOW_USER`, `AIRFLOW_EMAIL` and `AIRFLOW_PASSWORD` under `webserver` service in the docker-compose.yml before starting the container.
+
+Every time the airflow web server starts, it will create the user if it does not exist.
+
+
 ## Hadoop configuration
 
 #### Hadoop user and group
