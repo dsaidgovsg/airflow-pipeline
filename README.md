@@ -18,7 +18,7 @@ This docker image is based off [`datagovsg/python-spark-airflow:1.7`](https://hu
 
 Password authentication is enabled as a security mechanism for administering Airflow via its admin UI.
 
-Set `AIRFLOW_USER`, `AIRFLOW_EMAIL` and `AIRFLOW_PASSWORD` under `webserver` service your the docker compose file before starting the container.
+Set `AIRFLOW_USER`, `AIRFLOW_EMAIL` and `AIRFLOW_PASSWORD` under `webserver` service in the docker compose file before starting the container.
 
 Every time the airflow web server starts, it will create the user if it does not exist.
 
