@@ -44,6 +44,7 @@ if [ "$1" = 'afp-scheduler' ]; then
     done
     # gosu "${USER}" airflow backfill -s $(date --date="yesterday-10 days" +%Y-%m-%d) -e $(date --date="yesterday" +%Y-%m-%d) -m $(airflow list_dags | tail -n1)
 
+    (while :; do echo 'Serving logs'; gosu "${USER}" airflow serve_logs; sleep 1; done) &
     (while :; do echo 'Starting scheduler'; gosu "${USER}" airflow scheduler -n ${SCHEDULER_RUNS}; sleep 1; done)
 elif [ "$1" = 'afp-webserver' ]; then
   python "${AIRFLOW_HOME}"/setup_auth.py
