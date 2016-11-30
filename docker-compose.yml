@@ -3,7 +3,7 @@ services:
   postgres:
     image: postgres:9.5
     ports:
-      - 5999:5432
+      - 127.0.0.1:5999:5432
     restart: always
     volumes:
       - postgres:/var/lib/postgresql/data
@@ -29,7 +29,8 @@ services:
       PYSPARK_PYTHON: /usr/local/bin/python2.7
       PIPELINE_DATA_PATH: hdfs://dsg-cluster-gw01/datasets/finnet
       PIPELINE_DATA_FORMAT: com.databricks.spark.avro
-    command: "afp-scheduler"
+    hostname: afp-scheduler
+    command: afp-scheduler
     volumes:
       - airflow_logs:/airflow/logs
   webserver:
@@ -37,14 +38,18 @@ services:
     network_mode: "host"
     restart: always
     depends_on:
-      - postgres
+      - scheduler
     environment:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5999
+      POSTGRES_USER: fixme
+      POSTGRES_PASSWORD: fixme
+      POSTGRES_DB: airflow
       AIRFLOW_USER: fixme
       AIRFLOW_EMAIL: fixme@fix.me
       AIRFLOW_PASSWORD: fixme
-    command: "afp-webserver"
-    volumes:
-      - airflow_logs:/airflow/logs
+    hostname: afp-webserver
+    command: afp-webserver
 volumes:
   postgres: {}
   airflow_logs: {}
