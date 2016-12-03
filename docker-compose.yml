@@ -25,7 +25,8 @@ services:
       POSTGRES_USER: fixme
       POSTGRES_PASSWORD: fixme
       POSTGRES_DB: airflow
-      PYSPARK_SUBMIT_ARGS: "--driver-memory 16g --packages com.databricks:spark-csv_2.11:1.4.0,com.databricks:spark-avro_2.10:2.0.1,graphframes:graphframes:0.1.0-spark1.6 pyspark-shell"
+#      PYSPARK_SUBMIT_ARGS: --driver-memory 16g --packages com.databricks:spark-csv_2.11:1.4.0,com.databricks:spark-avro_2.10:2.0.1,graphframes:graphframes:0.1.0-spark1.6 pyspark-shell
+      PYSPARK_SUBMIT_ARGS: --driver-memory 16g --packages com.databricks:spark-csv_2.11:1.5.0,com.databricks:spark-avro_2.11:3.1.0,graphframes:graphframes:0.3.0-spark2.0-s_2.11 pyspark-shell
       PYSPARK_PYTHON: /usr/local/bin/python2.7
       PIPELINE_DATA_PATH: hdfs://dsg-cluster-gw01/datasets/finnet
       PIPELINE_DATA_FORMAT: com.databricks.spark.avro
