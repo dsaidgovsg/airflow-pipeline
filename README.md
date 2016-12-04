@@ -48,6 +48,8 @@ To change the environment variables, edit `docker-compose.yml` instead of `Docke
 
 To start, use only the `docker-compose.yml` file i.e. `docker-compose -p afp -f docker-compose.yml up --build -d` 
 
+To start with Macvlan networking mode, use only the `docker-compose.macvlan.yml` file i.e. `docker-compose -p afp -f docker-compose.macvlan.yml up --build -d`
+
 To bring the containers up for development, use also the `docker-compose.override.yml`. This will additionally create a volume at `./dags` and mounted in the container at `/airflow/dags`, allowing you to do edit the DAG files directly on your development machine and having them updated with the container immediately.
 
 
