@@ -51,6 +51,8 @@ services:
       AIRFLOW_PASSWORD: fixme
     hostname: afp-webserver
     command: afp-webserver
+    volumes_from:
+      - scheduler
 volumes:
   postgres: {}
   airflow_logs: {}
