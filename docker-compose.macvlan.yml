@@ -4,8 +4,6 @@ services:
     image: postgres:9.5
     networks:
       - afpnet
-    ports:
-      - 127.0.0.1:5999:5432
     restart: always
     volumes:
       - postgres:/var/lib/postgresql/data
