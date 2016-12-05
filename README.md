@@ -51,7 +51,7 @@ To start, use only the `docker-compose.yml` file i.e. `docker-compose -p afp -f 
 To start with Macvlan networking mode, use only the `docker-compose.macvlan.yml` file i.e. `docker-compose -p afp -f docker-compose.macvlan.yml up --build -d`
 
 #### Setup macvlan
-Make sure that the containers also have hosts file / DNS configured so it can communicate with resources on the network.
+Make sure that the containers also have name resolution configured so it can communicate with resources on the network. (e.g. `extra_hosts`, `dns` and `dns_search` configurations in Compose)
 ```bash
 docker network create -d macvlan --subnet=192.168.150.0/24 --ip-range=192.168.150.48/28 -o parent=p2p1 afpnet
 ```
