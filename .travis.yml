@@ -12,5 +12,5 @@ after_success:
 - export REPO=$TRAVIS_REPO_SLUG
 - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
 - echo $REPO:$TAG
-- docker build -f Dockerfile -t $REPO:$TAG --no-cache .
+- docker build -f docker/Dockerfile -t $REPO:$TAG --no-cache .
 - docker push $REPO:$TAG
