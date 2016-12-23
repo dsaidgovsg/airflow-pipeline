@@ -46,7 +46,7 @@ VOLUME ${AIRFLOW_HOME}/logs
 
 COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
-COPY hadoop-sample/conf/ ${HADOOP_CONF_DIR}/
+COPY hadoop/conf/ ${HADOOP_CONF_DIR}/
 COPY dags/ ${AIRFLOW_DAG}
 
 COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
@@ -54,7 +54,7 @@ COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
 COPY install_spark_packages.py ${AIRFLOW_HOME}/install_spark_packages.py
 RUN gosu "${USER}" python install_spark_packages.py
 
-COPY entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
+COPY docker/entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
 
 # CMD ["airflow", "webserver"]

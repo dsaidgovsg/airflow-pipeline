@@ -3,8 +3,8 @@ services:
   pipeline_tests:
     container_name: pipeline_tests
     build:
-      context: .
-      dockerfile: Dockerfile-tests
+      context: ..
+      dockerfile: tests/Dockerfile-tests
     environment:
       TEAMCITY_VERSION:
       TZ: "Asia/Singapore"
