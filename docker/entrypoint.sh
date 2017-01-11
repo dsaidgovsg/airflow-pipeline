@@ -1,6 +1,7 @@
 #!/bin/bash
-set -eu
+set -euo pipefail
 
+cd ${AIRFLOW_HOME}
 export SPARK_DIST_CLASSPATH=$(hadoop classpath)
 POSTGRES_TIMEOUT=60
 
@@ -37,7 +38,6 @@ gosu "${USER}" sed -i "/\(^dag_concurrency = \).*/ s//\1${AIRFLOW_DAG_CONCURRENC
 gosu "${USER}" sed -i "/\(^max_threads = \).*/ s//\1${AIRFLOW_DAG_CONCURRENCY}/" ${AIRFLOW_HOME}/airflow.cfg
 gosu "${USER}" airflow initdb # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
 
-cd ${AIRFLOW_HOME}
 if [ "$1" = 'afp-scheduler' ]; then
     (airflow list_dags | grep '^fn_') | while read fn_dag; do
         echo "Back filling DAG ${fn_dag}"
