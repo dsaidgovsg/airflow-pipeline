@@ -1,7 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-cd ${AIRFLOW_HOME}
 export SPARK_DIST_CLASSPATH=$(hadoop classpath)
 POSTGRES_TIMEOUT=60
 
