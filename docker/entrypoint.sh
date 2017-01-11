@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+set -euo pipefail
 
 export SPARK_DIST_CLASSPATH=$(hadoop classpath)
 POSTGRES_TIMEOUT=60
