@@ -38,7 +38,6 @@ gosu "${USER}" sed -i "/\(^max_threads = \).*/ s//\1${AIRFLOW_DAG_CONCURRENCY}/"
 gosu "${USER}" airflow initdb # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
 
 if [ "$1" = 'afp-scheduler' ]; then
-    echo "Starting scheduler"
     gosu "${USER}" airflow list_dags | (grep '^fn_' || echo -n "") | while read fn_dag; do
         echo "Back filling DAG ${fn_dag}"
         gosu "${USER}" airflow backfill -s $(date --date="yesterday-10 days" +%Y-%m-%d) -e $(date --date="yesterday" +%Y-%m-%d) -m ${fn_dag}
