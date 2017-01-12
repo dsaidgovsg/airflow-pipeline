@@ -38,7 +38,7 @@ gosu "${USER}" sed -i "/\(^max_threads = \).*/ s//\1${AIRFLOW_DAG_CONCURRENCY}/"
 gosu "${USER}" airflow initdb # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
 
 if [ "$1" = 'afp-scheduler' ]; then
-    (airflow list_dags | grep '^fn_') | while read fn_dag; do
+    gosu "${USER}" airflow list_dags | (grep '^fn_' || echo -n "") | while read fn_dag; do
         echo "Back filling DAG ${fn_dag}"
         gosu "${USER}" airflow backfill -s $(date --date="yesterday-10 days" +%Y-%m-%d) -e $(date --date="yesterday" +%Y-%m-%d) -m ${fn_dag}
     done
@@ -47,8 +47,9 @@ if [ "$1" = 'afp-scheduler' ]; then
     (while :; do echo 'Serving logs'; gosu "${USER}" airflow serve_logs; sleep 1; done) &
     (while :; do echo 'Starting scheduler'; gosu "${USER}" airflow scheduler -n ${SCHEDULER_RUNS}; sleep 1; done)
 elif [ "$1" = 'afp-webserver' ]; then
+  echo "Starting webserver"
   python "${AIRFLOW_HOME}"/setup_auth.py
-  gosu "${USER}" airflow webserver
+  exec gosu "${USER}" airflow webserver
 else
-  gosu "${USER}" "$@"
+  exec gosu "${USER}" "$@"
 fi
