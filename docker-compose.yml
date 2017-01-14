@@ -2,8 +2,8 @@ version: '2'
 services:
   postgres:
     image: postgres:9.5
-    networks:
-      - afpnet
+    ports:
+      - 127.0.0.1:5999:5432
     restart: always
     volumes:
       - postgres:/var/lib/postgresql/data
@@ -13,54 +13,44 @@ services:
       POSTGRES_DB: airflow
       TZ: "Asia/Singapore"
   scheduler:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    networks:
-      - afpnet
+    build: .
+    network_mode: "host"
     restart: always
     depends_on:
       - postgres
     environment:
       TZ: "Asia/Singapore"
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5999
       POSTGRES_USER: fixme
       POSTGRES_PASSWORD: fixme
       POSTGRES_DB: airflow
+#      PYSPARK_SUBMIT_ARGS: --driver-memory 16g --packages com.databricks:spark-csv_2.11:1.4.0,com.databricks:spark-avro_2.10:2.0.1,graphframes:graphframes:0.1.0-spark1.6 pyspark-shell
       PYSPARK_SUBMIT_ARGS: --driver-memory 16g --packages com.databricks:spark-csv_2.11:1.5.0,com.databricks:spark-avro_2.11:3.1.0,graphframes:graphframes:0.3.0-spark2.0-s_2.11 pyspark-shell
       PYSPARK_PYTHON: /usr/local/bin/python2.7
       PIPELINE_DATA_PATH: hdfs://dsg-cluster-gw01/datasets/finnet
       PIPELINE_DATA_FORMAT: com.databricks.spark.avro
-    hostname: scheduler
     command: afp-scheduler
     volumes:
       - airflow_logs:/airflow/logs
   webserver:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    networks:
-      - afpnet
+    build: .
+    network_mode: "host"
     restart: always
     depends_on:
       - scheduler
     environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5999
       POSTGRES_USER: fixme
       POSTGRES_PASSWORD: fixme
       POSTGRES_DB: airflow
       AIRFLOW_USER: fixme
       AIRFLOW_EMAIL: fixme@fix.me
       AIRFLOW_PASSWORD: fixme
-    hostname: webserver
     command: afp-webserver
     volumes_from:
       - scheduler
 volumes:
   postgres: {}
   airflow_logs: {}
-networks:
-  afpnet:
-    external: true
