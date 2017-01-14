@@ -35,8 +35,7 @@ services:
     volumes:
       - airflow_logs:/airflow/logs
   webserver:
-    build:
-      context: .
+    build: .
     networks:
       - afpnet
     restart: always
