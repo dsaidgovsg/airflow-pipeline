@@ -46,9 +46,9 @@ You might have to `docker login` first before you can build any images.
 
 To change the environment variables, edit `docker-compose.yml` instead of `Dockerfile` without the need to rebuild the docker image.
 
-To start, use only the `docker-compose.yml` file i.e. `docker-compose -p afp -f docker/docker-compose.yml up --build -d`
+To start, use only the `docker-compose.yml` file i.e. `docker-compose -p afp -f docker-compose.yml up --build -d`
 
-To start with Macvlan networking mode, use only the `docker-compose.macvlan.yml` file i.e. `docker-compose -p afp -f docker/docker-compose.macvlan.yml up --build -d`
+To start with Macvlan networking mode, use only the `docker-compose.macvlan.yml` file i.e. `docker-compose -p afp -f docker-compose.macvlan.yml up --build -d`
 
 #### Setup macvlan
 Make sure that the containers also have name resolution configured so it can communicate with resources on the network. (e.g. `extra_hosts`, `dns` and `dns_search` configurations in Compose)
@@ -73,7 +73,7 @@ To run tests, use `docker-compose -f tests/docker-compose.test.yml up --build`
 
 ## Logs
 
-To follow docker logs, use `docker-compose -p afp -f docker/docker-compose.yml logs --tail=10 -f`
+To follow docker logs, use `docker-compose -p afp -f docker-compose.yml logs --tail=10 -f`
 
 
 ## Accessing the docker container

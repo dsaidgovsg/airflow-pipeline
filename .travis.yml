@@ -4,7 +4,7 @@ python:
 services:
 - docker
 install:
-- docker build -t latest --no-cache -f docker/Dockerfile .
+- docker build -t latest --no-cache .
 script:
 - docker-compose -f tests/docker-compose.test.yml up
 after_success:
@@ -12,5 +12,5 @@ after_success:
 - export REPO=$TRAVIS_REPO_SLUG
 - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
 - echo $REPO:$TAG
-- docker build -f docker/Dockerfile -t $REPO:$TAG --no-cache .
+- docker build -t $REPO:$TAG --no-cache .
 - docker push $REPO:$TAG
