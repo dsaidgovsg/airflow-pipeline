@@ -49,7 +49,7 @@ if [ "$1" = 'afp-scheduler' ]; then
 elif [ "$1" = 'afp-webserver' ]; then
   echo "Starting webserver"
   python "${AIRFLOW_HOME}"/setup_auth.py
-  exec gosu "${USER}" airflow webserver --log-file=-
+  exec gosu "${USER}" airflow webserver --log-file=- --hostname=0.0.0.0
 else
   exec gosu "${USER}" "$@"
 fi
