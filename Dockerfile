@@ -1,5 +1,16 @@
-FROM datagovsg/python-spark-airflow:1.7
+FROM datagovsg/python-spark:2.7-1.6
 MAINTAINER Chris Sng <chris@data.gov.sg>
+
+# Setup airflow
+RUN pip install --no-cache-dir airflow==1.7.1.3 psycopg2
+ENV AIRFLOW_HOME /airflow
+
+WORKDIR ${AIRFLOW_HOME}
+
+# Setup airflow dags path
+ENV AIRFLOW_DAG ${AIRFLOW_HOME}/dags
+
+RUN mkdir -p ${AIRFLOW_DAG}
 
 # Install gosu
 ENV GOSU_VERSION 1.7
