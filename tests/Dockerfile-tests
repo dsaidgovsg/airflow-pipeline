@@ -1,4 +1,4 @@
-FROM datagovsg/python-spark-airflow:1.7
+FROM datagovsg/python-spark:2.7-1.6
 MAINTAINER Chris Sng <chris@data.gov.sg>
 
 RUN mkdir -p /usr/src/app
