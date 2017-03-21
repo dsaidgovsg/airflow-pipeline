@@ -11,7 +11,7 @@ This image is based off the [`python-spark`](https://github.com/datagovsg/python
 - Spark 1.6.1
 - Hadoop 2.6
 - Sqoop 1.4.6 (with JDBC connectors for PostgreSQL, MySQL and SQL Server)
-- Airflow 1.7 (with PostgreSQL 9.5)
+- Airflow 1.8 (with PostgreSQL 9.5)
 
 
 ## Authentication
