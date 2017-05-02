@@ -38,6 +38,7 @@ Place the airflow DAGs in ./dags which will be copied into the image
 
 The default docker user is 'afpuser' and group is 'hadoop'. Subsequent images that bases on this image can change the user by specifying docker arguments for 'SPARKUSER' and 'SPARKGROUP' respectively. For example, the docker-compose file that is based on this image would look something like this: 
 
+```
   scheduler:
     build:
       context: .
@@ -46,6 +47,7 @@ The default docker user is 'afpuser' and group is 'hadoop'. Subsequent images th
         SPARKGROUP: somegroup
     command: ["some-scheduler"]
     ...
+```
 
 Based on the specified docker user and group, see [Dockerfile](Dockerfile). Therefore, your Hadoop admin should also add the same user and group to your hadoop cluster. Also grant HDFS permissions on `PIPELINE_DATA_PATH` e.g. /datasets/hadoop
 
