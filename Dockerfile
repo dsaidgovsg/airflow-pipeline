@@ -13,7 +13,7 @@ ENV AIRFLOW_DAG ${AIRFLOW_HOME}/dags
 RUN mkdir -p ${AIRFLOW_DAG}
 
 # Install gosu
-ENV GOSU_VERSION 1.7
+ARG GOSU_VERSION=1.10
 RUN set -x \
     && apt-get update && apt-get install -y --no-install-recommends ca-certificates wget && rm -rf /var/lib/apt/lists/* \
     && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
