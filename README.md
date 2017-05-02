@@ -1,6 +1,7 @@
 # airflow-pipeline [![Build Status](https://travis-ci.org/datagovsg/airflow-pipeline.svg?branch=)](https://travis-ci.org/datagovsg/airflow-pipeline) [![Docker pulls](https://img.shields.io/docker/pulls/datagovsg/airflow-pipeline.svg)](https://hub.docker.com/r/datagovsg/airflow-pipeline/)
 
-An [Airflow](https://airflow.incubator.apache.org/) setup that aims to work well with Hadoop and Spark
+An [Airflow](https://airflow.incubator.apache.org/) setup that aims to work well with Hadoop and Spark. This is a base image that should be derived further by individual projects as needed. 
+This builds a barebone setup of airflow together with hadoop and spark. Derivative images would have to setup the necessary user information (if not it will use the defaults) for the project
 
 
 ## What this gives you
@@ -14,6 +15,11 @@ This image is based off the [`python-spark`](https://github.com/datagovsg/python
 - <img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Apache_Sqoop_logo.svg" height="16"> Sqoop 1.4.6 (with JDBC connectors for PostgreSQL, MySQL and SQL Server)
 
 
+# Configuration for derivative images 
+
+The following instructions refer to configuring the docker-compose files of derivative images. It is assumed that the docker file that the docker-compose files are using is based on this image. 
+The repository contains example docker-compose files for reference.
+
 ## Authentication
 
 Password authentication is enabled as a security mechanism for administering Airflow via its admin UI.
@@ -22,16 +28,30 @@ Set `AIRFLOW_USER`, `AIRFLOW_EMAIL` and `AIRFLOW_PASSWORD` under `webserver` ser
 
 Every time the airflow web server starts, it will create the user if it does not exist.
 
+## Airflow DAGs
+
+Place the airflow DAGs in ./dags which will be copied into the image
 
 ## Hadoop configuration
 
 #### Hadoop user and group
 
-Since the docker user is `afpuser` and group is `hadoop`, see [Dockerfile](Dockerfile). Therefore, your Hadoop admin should also add the same user and group to your hadoop cluster. Also grant HDFS permissions on `PIPELINE_DATA_PATH` e.g. /datasets/hadoop
+The default docker user is 'afpuser' and group is 'hadoop'. Subsequent images that bases on this image can change the user by specifying docker arguments for 'SPARKUSER' and 'SPARKGROUP' respectively. For example, the docker-compose file that is based on this image would look something like this: 
+
+  scheduler:
+    build:
+      context: .
+      args:
+        SPARKUSER: someuser
+        SPARKGROUP: somegroup
+    command: ["some-scheduler"]
+    ...
+
+Based on the specified docker user and group, see [Dockerfile](Dockerfile). Therefore, your Hadoop admin should also add the same user and group to your hadoop cluster. Also grant HDFS permissions on `PIPELINE_DATA_PATH` e.g. /datasets/hadoop
 
 #### Hadoop client configuration files
 
-To write to HDFS and connect to the YARN ResourceManager, the (client side) configuration files for the Hadoop cluster must be added.
+To write to HDFS and connect to the YARN ResourceManager, the (client side) configuration files for the Hadoop cluster must be added. Unlike previous versions of this image, the hadoop configuration files has to be included when building the derivative images (based on this image). 
 
 Obtain from your Hadoop administrator and place in `./hadoop` directory. Note the environment variables that might be overwritten. e.g. Overriding `HADOOP_MAPRED_HOME` in `hadoop-env.sh`
 
