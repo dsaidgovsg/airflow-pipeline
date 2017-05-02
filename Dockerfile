@@ -30,7 +30,7 @@ COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
 VOLUME ${AIRFLOW_HOME}/logs
 COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
-
+# Delay creation of user and group
 ONBUILD ARG SPARKUSER=afpuser
 ONBUILD ARG SPARKGROUP=hadoop
 
@@ -39,34 +39,34 @@ ONBUILD ENV GROUP ${SPARKGROUP}
 ONBUILD RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
 
 # Number of times the Airflow scheduler will run before it terminates (and restarts)
-ONBUILD ENV SCHEDULER_RUNS=5
+ENV SCHEDULER_RUNS=5
 # parallelism = number of physical python processes the scheduler can run
-ONBUILD ENV AIRFLOW_PARALLELISM=8
+ENV AIRFLOW_PARALLELISM=8
 # dag_concurrency = the number of TIs to be allowed to run PER-dag at once
-ONBUILD ENV AIRFLOW_DAG_CONCURRENCY=6
+ENV AIRFLOW_DAG_CONCURRENCY=6
 
 # Airflow uses postgres as its database, following are the examples env vars
-ONBUILD ENV POSTGRES_HOST=localhost
-ONBUILD ENV POSTGRES_PORT=5999
-ONBUILD ENV POSTGRES_USER=fixme
-ONBUILD ENV POSTGRES_PASSWORD=fixme
-ONBUILD ENV POSTGRES_DB=airflow
+ENV POSTGRES_HOST=localhost
+ENV POSTGRES_PORT=5999
+ENV POSTGRES_USER=fixme
+ENV POSTGRES_PASSWORD=fixme
+ENV POSTGRES_DB=airflow
 
 # Example HDFS drop point which PySpark can use to access its datasets
 ONBUILD ENV PIPELINE_DATA_PATH=hdfs://dsg-cluster-node01:8020/datasets/"${GROUP}"
 
-ONBUILD WORKDIR ${AIRFLOW_HOME}
+WORKDIR ${AIRFLOW_HOME}
 
 # Setup pipeline dependencies
-ONBUILD COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
-ONBUILD RUN pip install -r "${AIRFLOW_HOME}/requirements.txt"
+COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
+RUN pip install -r "${AIRFLOW_HOME}/requirements.txt"
 
 
 ONBUILD COPY hadoop/conf/ ${HADOOP_CONF_DIR}/
 ONBUILD COPY dags/ ${AIRFLOW_DAG}
 
 
-ONBUILD COPY install_spark_packages.py ${AIRFLOW_HOME}/install_spark_packages.py
+COPY install_spark_packages.py ${AIRFLOW_HOME}/install_spark_packages.py
 ONBUILD RUN gosu "${USER}" python install_spark_packages.py
 
 COPY entrypoint.sh /entrypoint.sh
