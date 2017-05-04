@@ -26,9 +26,17 @@ RUN set -x \
     && gosu nobody true \
     && apt-get -y autoremove
 
-ENV USER afpuser
-ENV GROUP hadoop
-RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
+COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
+VOLUME ${AIRFLOW_HOME}/logs
+COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+
+# Delay creation of user and group
+ONBUILD ARG THEUSER=afpuser
+ONBUILD ARG THEGROUP=hadoop
+
+ONBUILD ENV USER ${THEUSER}
+ONBUILD ENV GROUP ${THEGROUP}
+ONBUILD RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
 
 # Number of times the Airflow scheduler will run before it terminates (and restarts)
 ENV SCHEDULER_RUNS=5
@@ -45,7 +53,7 @@ ENV POSTGRES_PASSWORD=fixme
 ENV POSTGRES_DB=airflow
 
 # Example HDFS drop point which PySpark can use to access its datasets
-ENV PIPELINE_DATA_PATH=hdfs://dsg-cluster-node01:8020/datasets/"${GROUP}"
+ONBUILD ENV PIPELINE_DATA_PATH=hdfs://dsg-cluster-node01:8020/datasets/"${GROUP}"
 
 WORKDIR ${AIRFLOW_HOME}
 
@@ -53,17 +61,13 @@ WORKDIR ${AIRFLOW_HOME}
 COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
 RUN pip install -r "${AIRFLOW_HOME}/requirements.txt"
 
-VOLUME ${AIRFLOW_HOME}/logs
 
-COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+ONBUILD COPY hadoop/conf/ ${HADOOP_CONF_DIR}/
+ONBUILD COPY dags/ ${AIRFLOW_DAG}
 
-COPY hadoop/conf/ ${HADOOP_CONF_DIR}/
-COPY dags/ ${AIRFLOW_DAG}
-
-COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
 
 COPY install_spark_packages.py ${AIRFLOW_HOME}/install_spark_packages.py
-RUN gosu "${USER}" python install_spark_packages.py
+ONBUILD RUN gosu "${USER}" python install_spark_packages.py
 
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
