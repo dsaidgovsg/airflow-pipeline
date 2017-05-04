@@ -31,11 +31,11 @@ VOLUME ${AIRFLOW_HOME}/logs
 COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
 # Delay creation of user and group
-ONBUILD ARG SPARKUSER=afpuser
-ONBUILD ARG SPARKGROUP=hadoop
+ONBUILD ARG THEUSER=afpuser
+ONBUILD ARG THEGROUP=hadoop
 
-ONBUILD ENV USER ${SPARKUSER}
-ONBUILD ENV GROUP ${SPARKGROUP}
+ONBUILD ENV USER ${THEUSER}
+ONBUILD ENV GROUP ${THEGROUP}
 ONBUILD RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
 
 # Number of times the Airflow scheduler will run before it terminates (and restarts)
