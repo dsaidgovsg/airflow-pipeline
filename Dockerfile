@@ -1,10 +1,12 @@
 FROM datagovsg/python-spark:2.7-1.6
 MAINTAINER Chris Sng <chris@data.gov.sg>
 
-RUN apt-get install libsasl2-dev
-
 # Setup airflow
-RUN pip install --no-cache-dir "airflow[devel_hadoop, crypto]==1.8.0" psycopg2
+RUN set -ex \
+    && apt-get update \
+    && apt-get install -y libsasl2-dev \
+    && pip install --no-cache-dir "airflow[devel_hadoop, crypto]==1.8.0" psycopg2
+
 ENV AIRFLOW_HOME /airflow
 
 WORKDIR ${AIRFLOW_HOME}
