@@ -1,6 +1,9 @@
 language: python
 python:
 - '2.7'
+branches:
+  only:
+  - master
 services:
 - docker
 install:
@@ -8,7 +11,7 @@ install:
 script:
 - docker-compose -f tests/docker-compose.test.yml up
 after_success:
-- docker login -u $DOCKER_USER -p $DOCKER_PASS
+- docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
 - export REPO=$TRAVIS_REPO_SLUG
 - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
 - echo $REPO:$TAG
