@@ -32,9 +32,9 @@ fi
 set -e
 
 gosu "${USER}" sed -i "/\(^sql_alchemy_conn = \).*/ s//\1postgresql:\/\/${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}\/${POSTGRES_DB}/" ${AIRFLOW_HOME}/airflow.cfg
-gosu "${USER}" sed -i "/\(^parallelism = \).*/ s//\1${AIRFLOW_PARALLELISM}/" ${AIRFLOW_HOME}/airflow.cfg
-gosu "${USER}" sed -i "/\(^dag_concurrency = \).*/ s//\1${AIRFLOW_DAG_CONCURRENCY}/" ${AIRFLOW_HOME}/airflow.cfg
-gosu "${USER}" sed -i "/\(^max_threads = \).*/ s//\1${AIRFLOW_DAG_CONCURRENCY}/" ${AIRFLOW_HOME}/airflow.cfg
+gosu "${USER}" sed -i "/\(^parallelism = \).*/ s//\1${AIRFLOW__CORE__PARALLELISM}/" ${AIRFLOW_HOME}/airflow.cfg
+gosu "${USER}" sed -i "/\(^dag_concurrency = \).*/ s//\1${AIRFLOW__CORE__DAG_CONCURRENCY}/" ${AIRFLOW_HOME}/airflow.cfg
+gosu "${USER}" sed -i "/\(^max_threads = \).*/ s//\1${AIRFLOW__SCHEDULER__MAX_THREADS}/" ${AIRFLOW_HOME}/airflow.cfg
 gosu "${USER}" airflow initdb # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
 
 if [ "$1" = 'afp-scheduler' ]; then
