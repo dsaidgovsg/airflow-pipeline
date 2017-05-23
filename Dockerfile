@@ -45,9 +45,11 @@ ONBUILD RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
 # Number of times the Airflow scheduler will run before it terminates (and restarts)
 ENV SCHEDULER_RUNS=5
 # parallelism = number of physical python processes the scheduler can run
-ENV AIRFLOW_PARALLELISM=8
+ENV AIRFLOW__CORE__PARALLELISM=8
 # dag_concurrency = the number of TIs to be allowed to run PER-dag at once
-ENV AIRFLOW_DAG_CONCURRENCY=6
+ENV AIRFLOW__CORE__DAG_CONCURRENCY=6
+# max_threads = number of processes to parallelize the scheduler over, cannot exceed the cpu count
+ENV AIRFLOW__SCHEDULER__MAX_THREADS=4
 
 # Airflow uses postgres as its database, following are the examples env vars
 ENV POSTGRES_HOST=localhost
