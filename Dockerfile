@@ -5,7 +5,7 @@ MAINTAINER Chris Sng <chris@data.gov.sg>
 RUN set -ex \
     && apt-get update \
     && apt-get install -y libsasl2-dev libffi-dev \
-    && pip install --no-cache-dir "airflow[devel_hadoop, crypto]==1.8.0" psycopg2
+    && pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.8.1" psycopg2
 
 ENV AIRFLOW_HOME /airflow
 
