@@ -16,4 +16,4 @@ after_success:
 - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
 - echo $REPO:$TAG
 - docker build -t $REPO:$TAG --no-cache .
-- docker push $REPO:$TAG
+- if [ "$TRAVIS_EVENT_TYPE" == "push"]; then docker push $REPO:$TAG ; fi
