@@ -11,9 +11,11 @@ install:
 script:
 - docker-compose -f tests/docker-compose.test.yml up
 after_success:
-- docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-- export REPO=$TRAVIS_REPO_SLUG
-- export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
-- echo $REPO:$TAG
-- docker build -t $REPO:$TAG --no-cache .
-- docker push $REPO:$TAG
+- if [ "$TRAVIS_EVENT_TYPE" == "push"] && [ "$TRAVIS_BRANCH" == "master" ]; then
+      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+      REPO=${TRAVIS_REPO_SLUG}
+      TAG="latest"
+      echo $REPO:$TAG
+      docker build -t $REPO:$TAG --no-cache .
+      docker push $REPO:$TAG ; fi
+  fi
