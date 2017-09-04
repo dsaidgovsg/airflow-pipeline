@@ -4,7 +4,7 @@ MAINTAINER Chris Sng <chris@data.gov.sg>
 # Setup airflow
 RUN set -ex \
     && apt-get update \
-    && apt-get install -y vim-tiny libsasl2-dev libffi-dev \
+    && apt-get install --no-install-recommends -y vim-tiny libsasl2-dev libffi-dev \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.8.1" psycopg2
 
@@ -20,7 +20,7 @@ RUN mkdir -p ${AIRFLOW_DAG}
 # Install gosu
 ARG GOSU_VERSION=1.10
 RUN set -x \
-    && apt-get update && apt-get install -y --no-install-recommends ca-certificates wget && rm -rf /var/lib/apt/lists/* \
+    && apt-get update && apt-get install -y --no-install-recommends ca-certificates wget \
     && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
     && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc" \
     && export GNUPGHOME="$(mktemp -d)" \
@@ -29,7 +29,9 @@ RUN set -x \
     && rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
     && chmod +x /usr/local/bin/gosu \
     && gosu nobody true \
-    && apt-get -y autoremove
+    && apt-get remove -y wget \
+    && apt-get -y autoremove \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
 VOLUME ${AIRFLOW_HOME}/logs
@@ -71,7 +73,6 @@ RUN pip install -r "${AIRFLOW_HOME}/requirements.txt"
 
 ONBUILD COPY hadoop/conf/ ${HADOOP_CONF_DIR}/
 ONBUILD COPY dags/ ${AIRFLOW_DAG}
-
 
 COPY install_spark_packages.py ${AIRFLOW_HOME}/install_spark_packages.py
 ONBUILD RUN gosu "${USER}" python install_spark_packages.py
