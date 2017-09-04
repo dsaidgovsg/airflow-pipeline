@@ -78,3 +78,6 @@ ONBUILD RUN gosu "${USER}" python install_spark_packages.py
 
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
+
+# Remove docs to reduce size (except copyright files)
+RUN find /usr/share/doc -not -path "/usr/share/doc/*/copyright" -delete
