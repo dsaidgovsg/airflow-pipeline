@@ -29,6 +29,7 @@ RUN set -x \
     && rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
     && chmod +x /usr/local/bin/gosu \
     && gosu nobody true \
+    && apt-get remove -y wget \
     && apt-get -y autoremove \
     && rm -rf /var/lib/apt/lists/*
 
