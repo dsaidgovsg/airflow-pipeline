@@ -13,7 +13,9 @@ services:
       POSTGRES_DB: airflow
       TZ: "Asia/Singapore"
   scheduler:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile-runnable
     networks:
       - afpnet
     restart: always
@@ -36,7 +38,9 @@ services:
     volumes:
       - airflow_logs:/airflow/logs
   webserver:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile-runnable
     networks:
       - afpnet
     restart: always
