@@ -5,7 +5,7 @@ An [Airflow](https://airflow.incubator.apache.org/) setup that aims to work well
 
 ## What this gives you
 
-This image is based off the [`python-spark`](https://github.com/datagovsg/python-spark) image and contains standard Python, Hadoop and Spark installations. See their respective docker files to know where the stuffs are installed.
+This image is based off the [`python-spark`](https://github.com/datagovsg/python-spark) image and contains standard Python, Hadoop and Spark installations.
 
 - <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png" height="20"> Python 2.7
 - <img src="https://airflow.incubator.apache.org/_images/pin_large.png" height="20"> Airflow 1.8 (with PostgreSQL 9.6)
