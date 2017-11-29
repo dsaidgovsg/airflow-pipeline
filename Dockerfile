@@ -73,7 +73,9 @@ RUN pip install -r "${AIRFLOW_HOME}/requirements.txt"
 
 ONBUILD COPY hadoop/conf/ ${HADOOP_CONF_DIR}/
 ONBUILD COPY dags/ ${AIRFLOW_DAG}
-ONBUILD RUN echo "Changing owner of files in ${AIRFLOW_HOME} to ${USER}" && chown -R "${USER}" ${AIRFLOW_HOME}
+ONBUILD RUN echo "Changing owner and mode of ${AIRFLOW_HOME} to ${USER}" \
+  && chown -R "${USER}" ${AIRFLOW_HOME} \
+  && chmod 0744 -R ${AIRFLOW_HOME}
 
 COPY install_spark_packages.py ${AIRFLOW_HOME}/install_spark_packages.py
 ONBUILD RUN gosu "${USER}" python install_spark_packages.py

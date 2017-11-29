@@ -10,7 +10,7 @@ set +e
 # Wait for Postgres to be available
 # Strategy from http://superuser.com/a/806331/98716
 DATABASE_DEV="/dev/tcp/${POSTGRES_HOST}/${POSTGRES_PORT}"
-echo "Checking datbase connection ${DATABASE_DEV}"
+echo "Checking database connection ${DATABASE_DEV}"
 timeout ${POSTGRES_TIMEOUT} bash <<EOT
 while ! (echo > "${DATABASE_DEV}") >/dev/null 2>&1; do
     echo "Waiting for database ${DATABASE_DEV}"
@@ -27,10 +27,8 @@ else
 fi
 set -e
 
-gosu "${USER}" sed -i "/\(^sql_alchemy_conn = \).*/ s//\1postgresql:\/\/${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}\/${POSTGRES_DB}/" ${AIRFLOW_HOME}/airflow.cfg
-gosu "${USER}" sed -i "/\(^parallelism = \).*/ s//\1${AIRFLOW__CORE__PARALLELISM}/" ${AIRFLOW_HOME}/airflow.cfg
-gosu "${USER}" sed -i "/\(^dag_concurrency = \).*/ s//\1${AIRFLOW__CORE__DAG_CONCURRENCY}/" ${AIRFLOW_HOME}/airflow.cfg
-gosu "${USER}" sed -i "/\(^max_threads = \).*/ s//\1${AIRFLOW__SCHEDULER__MAX_THREADS}/" ${AIRFLOW_HOME}/airflow.cfg
+export AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+
 gosu "${USER}" airflow initdb # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
 
 if [ "$1" = 'afp-scheduler' ]; then
