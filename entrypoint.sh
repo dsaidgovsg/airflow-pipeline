@@ -5,6 +5,10 @@ export SPARK_DIST_CLASSPATH=$(hadoop classpath)
 POSTGRES_TIMEOUT=60
 
 echo "Running as: ${USER}"
+if [ "${USER}" != "root" ]; then
+  echo "Changing owner of files in ${AIRFLOW_HOME} to ${USER}"
+  chown -R "${USER}" ${AIRFLOW_HOME} || true
+fi
 
 set +e
 # Wait for Postgres to be available
