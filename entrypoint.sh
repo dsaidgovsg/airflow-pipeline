@@ -10,6 +10,13 @@ if [ "${USER}" != "root" ]; then
   chown -R "${USER}" ${AIRFLOW_HOME} || true
 fi
 
+DB_CONN_PARTS=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#postgresql://\([[:alnum:]]\+\):\([[:alnum:]]\+\)@\([[:alnum:]]\+\):\([[:alnum:]]\+\)/\([[:alnum:]]\+\)#\1 \2 \3 \4 \5#')
+export POSTGRES_USER=$(echo $DB_CONN_PARTS | awk '{ print $1 }')
+export POSTGRES_PASSWORD=$(echo $DB_CONN_PARTS | awk '{ print $2 }')
+export POSTGRES_HOST=$(echo $DB_CONN_PARTS | awk '{ print $3 }')
+export POSTGRES_PORT=$(echo $DB_CONN_PARTS | awk '{ print $4 }')
+export POSTGRES_DB=$(echo $DB_CONN_PARTS | awk '{ print $5 }')
+
 set +e
 # Wait for Postgres to be available
 # Strategy from http://superuser.com/a/806331/98716
@@ -30,8 +37,6 @@ else
     exit 1
 fi
 set -e
-
-export AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
 
 gosu "${USER}" airflow initdb # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
 
