@@ -22,11 +22,7 @@ services:
       - postgres
     environment:
       TZ: "Asia/Singapore"
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5999
-      POSTGRES_USER: fixme
-      POSTGRES_PASSWORD: fixme
-      POSTGRES_DB: airflow
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@localhost:5999/airflow
       PYSPARK_SUBMIT_ARGS: --driver-memory 16g --packages com.databricks:spark-csv_2.10:1.5.0,com.databricks:spark-avro_2.10:2.0.1,graphframes:graphframes:0.1.0-spark1.6 pyspark-shell
 #      PYSPARK_SUBMIT_ARGS: --driver-memory 16g --packages com.databricks:spark-csv_2.11:1.5.0,com.databricks:spark-avro_2.11:3.1.0,graphframes:graphframes:0.3.0-spark2.0-s_2.11 pyspark-shell
       PYSPARK_PYTHON: /usr/local/bin/python2.7
@@ -44,11 +40,7 @@ services:
     depends_on:
       - scheduler
     environment:
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5999
-      POSTGRES_USER: fixme
-      POSTGRES_PASSWORD: fixme
-      POSTGRES_DB: airflow
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@localhost:5999/airflow
       AIRFLOW_USER: fixme
       AIRFLOW_EMAIL: fixme@fix.me
       AIRFLOW_PASSWORD: fixme

@@ -36,6 +36,7 @@ RUN set -x \
 COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
 VOLUME ${AIRFLOW_HOME}/logs
 COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+COPY unittests.cfg ${AIRFLOW_HOME}/unittests.cfg
 
 # Delay creation of user and group
 ONBUILD ARG THEUSER=afpuser
