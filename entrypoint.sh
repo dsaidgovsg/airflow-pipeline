@@ -10,7 +10,7 @@ if [ "${USER}" != "root" ]; then
   chown -R "${USER}" ${AIRFLOW_HOME} || true
 fi
 
-CONN_PARTS_REGEX='postgresql://\([[:print:]]\+\):\([[:print:]]\+\)@\([[:print:]]\+\):\([[:print:]]\+\)/\([[:print:]]\+\)'
+CONN_PARTS_REGEX='postgresql://\([-a-zA-Z0-9_]\+\):\([[:print:]]\+\)@\([-a-zA-Z0-9_\.]\+\):\([0-9]\+\)/\([[:print:]]\+\)'
 export POSTGRES_USER=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\1#')
 export POSTGRES_PASSWORD=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\2#')
 export POSTGRES_HOST=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\3#')
