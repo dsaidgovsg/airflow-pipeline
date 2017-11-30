@@ -10,12 +10,12 @@ if [ "${USER}" != "root" ]; then
   chown -R "${USER}" ${AIRFLOW_HOME} || true
 fi
 
-DB_CONN_PARTS=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#postgresql://\([[:alnum:]]\+\):\([[:alnum:]]\+\)@\([[:alnum:]]\+\):\([[:alnum:]]\+\)/\([[:alnum:]]\+\)#\1 \2 \3 \4 \5#')
-export POSTGRES_USER=$(echo $DB_CONN_PARTS | awk '{ print $1 }')
-export POSTGRES_PASSWORD=$(echo $DB_CONN_PARTS | awk '{ print $2 }')
-export POSTGRES_HOST=$(echo $DB_CONN_PARTS | awk '{ print $3 }')
-export POSTGRES_PORT=$(echo $DB_CONN_PARTS | awk '{ print $4 }')
-export POSTGRES_DB=$(echo $DB_CONN_PARTS | awk '{ print $5 }')
+CONN_PARTS_REGEX='postgresql://\([-a-zA-Z0-9_]\+\):\([[:print:]]\+\)@\([-a-zA-Z0-9_\.]\+\):\([0-9]\+\)/\([[:print:]]\+\)'
+export POSTGRES_USER=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\1#')
+export POSTGRES_PASSWORD=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\2#')
+export POSTGRES_HOST=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\3#')
+export POSTGRES_PORT=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\4#')
+export POSTGRES_DB=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\5#')
 
 set +e
 # Wait for Postgres to be available
