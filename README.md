@@ -8,7 +8,7 @@ An [Airflow](https://airflow.incubator.apache.org/) setup that aims to work well
 This image is based off the [`python-spark`](https://github.com/datagovsg/python-spark) image and contains standard Python, Hadoop and Spark installations.
 
 - <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png" height="20"> Python 2.7
-- <img src="https://airflow.incubator.apache.org/_images/pin_large.png" height="20"> Airflow 1.8 (with PostgreSQL 9.6)
+- <img src="https://airflow.incubator.apache.org/_images/pin_large.png" height="20"> Airflow 1.9 (with PostgreSQL 9.6)
 - <img src="http://spark.apache.org/images/spark-logo-trademark.png" height="24"> Spark 1.6.1
 - <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Hadoop_logo.svg/320px-Hadoop_logo.svg.png" height="20"> Hadoop 2.6
 - <img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Apache_Sqoop_logo.svg" height="16"> Sqoop 1.4.6 (with JDBC connectors for PostgreSQL, MySQL and SQL Server)
