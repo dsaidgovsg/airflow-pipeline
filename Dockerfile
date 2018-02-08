@@ -6,7 +6,7 @@ RUN set -ex \
     && apt-get update \
     && apt-get install --no-install-recommends -y vim-tiny libsasl2-dev libffi-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.9.0" psycopg2
+    && pip install --no-cache-dir "git+git://github.com/apache/incubator-airflow.git@5e4d7d8d7da250cacc15d8a2247098f0b42a3def#egg=apache-airflow[devel_hadoop, crypto]" psycopg2
 
 ENV AIRFLOW_HOME /airflow
 
