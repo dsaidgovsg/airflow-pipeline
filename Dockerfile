@@ -1,4 +1,4 @@
-FROM datagovsg/python-spark:2.7-1.6
+FROM python:2.7
 MAINTAINER Chris Sng <chris@data.gov.sg>
 
 # Setup airflow
@@ -61,8 +61,6 @@ RUN pip install -r "${AIRFLOW_HOME}/requirements.txt"
 ONBUILD COPY hadoop/conf/ ${HADOOP_CONF_DIR}/
 ONBUILD COPY dags/ ${AIRFLOW_DAG}
 
-COPY install_spark_packages.py ${AIRFLOW_HOME}/install_spark_packages.py
-ONBUILD RUN gosu "${USER}" python install_spark_packages.py
-
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
+
