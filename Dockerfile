@@ -5,7 +5,7 @@ MAINTAINER Chris Sng <chris@data.gov.sg>
 RUN set -ex \
     && (echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/backports.list) \
     && apt-get update \
-    && apt-get install --no-install-recommends -y vim-tiny libsasl2-dev libffi-dev gosu \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --force-yes vim-tiny libsasl2-dev libffi-dev gosu krb5-user \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.9.0" psycopg2 \
     && pip install --no-cache-dir sqlalchemy==1.1.17
