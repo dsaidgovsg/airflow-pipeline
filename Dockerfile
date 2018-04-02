@@ -48,19 +48,15 @@ ENV POSTGRES_USER=fixme
 ENV POSTGRES_PASSWORD=fixme
 ENV POSTGRES_DB=airflow
 
-# Example HDFS drop point which PySpark can use to access its datasets
-ONBUILD ENV PIPELINE_DATA_PATH=hdfs://dsg-cluster-node01:8020/datasets/"${GROUP}"
-
 WORKDIR ${AIRFLOW_HOME}
 
 # Setup pipeline dependencies
 COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
 RUN pip install -r "${AIRFLOW_HOME}/requirements.txt"
 
-
-ONBUILD COPY hadoop/conf/ ${HADOOP_CONF_DIR}/
-ONBUILD COPY dags/ ${AIRFLOW_DAG}
-
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
+
+## To build your own image:
+# ONBUILD COPY dags/ ${AIRFLOW_DAG}
 
