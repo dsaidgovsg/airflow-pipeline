@@ -3,8 +3,9 @@ MAINTAINER Chris Sng <chris@data.gov.sg>
 
 # Setup airflow
 RUN set -ex \
+    && (echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/backports.list) \
     && apt-get update \
-    && apt-get install --no-install-recommends -y vim-tiny libsasl2-dev libffi-dev \
+    && apt-get install --no-install-recommends -y vim-tiny libsasl2-dev libffi-dev gosu \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.9.0" psycopg2 \
     && pip install --no-cache-dir sqlalchemy==1.1.17
@@ -17,22 +18,6 @@ WORKDIR ${AIRFLOW_HOME}
 ENV AIRFLOW_DAG ${AIRFLOW_HOME}/dags
 
 RUN mkdir -p ${AIRFLOW_DAG}
-
-# Install gosu
-ARG GOSU_VERSION=1.10
-RUN set -x \
-    && apt-get update && apt-get install -y --no-install-recommends ca-certificates wget \
-    && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
-    && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc" \
-    && export GNUPGHOME="$(mktemp -d)" \
-    && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
-    && gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \
-    && rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
-    && chmod +x /usr/local/bin/gosu \
-    && gosu nobody true \
-    && apt-get remove -y wget \
-    && apt-get -y autoremove \
-    && rm -rf /var/lib/apt/lists/*
 
 COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
 VOLUME ${AIRFLOW_HOME}/logs
