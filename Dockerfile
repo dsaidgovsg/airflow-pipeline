@@ -76,7 +76,7 @@ ENV PATH=$PATH:${SPARK_HOME}/bin
 ENV PYTHONPATH=${SPARK_HOME}/${SPARK_PY4J}:${SPARK_HOME}/python
 ENV PYSPARK_SUBMIT_ARGS="--driver-memory 8g --py-files ${SPARK_HOME}/python/lib/pyspark.zip pyspark-shell"
 
-# Download Spark 2.1.2
+# Download Spark
 ARG SPARK_EXTRACT_LOC=/sparkbin
 RUN set -eux && \
     mkdir -p ${SPARK_EXTRACT_LOC} && \
