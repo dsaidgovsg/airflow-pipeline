@@ -62,6 +62,11 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 FROM no-spark AS with-spark
 
+# Install Java
+RUN apt-get update \
+  && apt-get install -t jessie-backports --no-install-recommends -y openjdk-8-jre-headless \
+  && rm -rf /var/lib/apt/lists/*
+
 ARG SPARK_VERSION
 ARG SPARK_VARIANT
 ARG SPARK_PY4J
@@ -70,11 +75,6 @@ ENV SPARK_HOME=/opt/spark-${SPARK_VERSION}
 ENV PATH=$PATH:${SPARK_HOME}/bin
 ENV PYTHONPATH=${SPARK_HOME}/${SPARK_PY4J}:${SPARK_HOME}/python
 ENV PYSPARK_SUBMIT_ARGS="--driver-memory 8g --py-files ${SPARK_HOME}/python/lib/pyspark.zip pyspark-shell"
-
-# Install Java
-RUN apt-get update \
-  && apt-get install -t jessie-backports --no-install-recommends -y openjdk-8-jre-headless \
-  && rm -rf /var/lib/apt/lists/*
 
 # Download Spark 2.1.2
 ARG SPARK_EXTRACT_LOC=/sparkbin
