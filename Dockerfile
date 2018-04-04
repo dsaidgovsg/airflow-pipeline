@@ -84,7 +84,7 @@ RUN set -eux && \\
     tar -xz -C /opt/ && \
     mv /opt/hadoop-${HADOOP_VERSION} /opt/hadoop && \
     mkdir -p ${SPARK_EXTRACT_LOC} && \
-    curl https://www.mirrorservice.org/sites/ftp.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz | \
+    curl https://www.mirrorservice.org/sites/ftp.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION:0:3}.tgz | \
     tar -xz -C ${SPARK_EXTRACT_LOC} && \
     mkdir -p ${SPARK_HOME} && \
     mv ${SPARK_EXTRACT_LOC}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION:0:3}/* ${SPARK_HOME} && \
