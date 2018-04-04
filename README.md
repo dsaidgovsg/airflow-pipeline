@@ -9,7 +9,7 @@ This image is based off the [`python-spark`](https://github.com/datagovsg/python
 
 - <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png" height="20"> Python 2.7
 - <img src="https://airflow.incubator.apache.org/_images/pin_large.png" height="20"> Airflow 1.9 (with PostgreSQL 9.6)
-- <img src="http://spark.apache.org/images/spark-logo-trademark.png" height="24"> Spark 1.6.1
+- <img src="http://spark.apache.org/images/spark-logo-trademark.png" height="24"> Spark 1.6 and 2.1
 - <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Hadoop_logo.svg/320px-Hadoop_logo.svg.png" height="20"> Hadoop 2.6
 - <img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Apache_Sqoop_logo.svg" height="16"> Sqoop 1.4.6 (with JDBC connectors for PostgreSQL, MySQL and SQL Server)
 
@@ -52,9 +52,9 @@ Based on the specified docker user and group, see [Dockerfile](Dockerfile). Ther
 
 #### Hadoop client configuration files
 
-To write to HDFS and connect to the YARN ResourceManager, the (client side) configuration files for the Hadoop cluster must be added. Unlike previous versions of this image, the Hadoop configuration files has to be included when building this or any derivative images as they will be copied into the image.
+To write to HDFS and connect to the YARN ResourceManager, the (client side) configuration files for Hadoop, Yarn and Hive must be added. Unlike previous versions of this image, the Hadoop configuration files has to be included when building this or any derivative images as they will be copied into the image.
 
-Obtain from your Hadoop administrator and place in `./hadoop/conf` directory. Note the environment variables that might be overwritten. e.g. Overriding `HADOOP_MAPRED_HOME` in `hadoop-env.sh`
+**In your derivative images, you should copy these configuration files and set the environment variables `HADOOP_CONF_DIR`, `HIVE_CONF_DIR` and `YARN_CONF_DIR` appropriately.**
 
 The configuration contained in this directory will be distributed to the YARN cluster so that all containers used by the application use the same configuration.
 

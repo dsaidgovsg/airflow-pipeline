@@ -71,10 +71,6 @@ ARG SPARK_PY4J
 
 ENV HADOOP_HOME /opt/hadoop
 ENV PATH ${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin
-ENV HADOOP_CONF_DIR ${HADOOP_HOME}/etc/hadoop
-ENV HDFS_CONF_DIR ${HADOOP_CONF_DIR}
-ENV YARN_CONF_DIR ${HADOOP_CONF_DIR}
-ENV HIVE_CONF_DIR ${HADOOP_CONF_DIR}
 
 ENV SPARK_HOME=/opt/spark-${SPARK_VERSION}
 ENV PATH=$PATH:${SPARK_HOME}/bin
@@ -88,7 +84,7 @@ RUN set -eux && \\
     tar -xz -C /opt/ && \
     mv /opt/hadoop-${HADOOP_VERSION} /opt/hadoop && \
     mkdir -p ${SPARK_EXTRACT_LOC} && \
-    curl https://www.mirrorservice.org/sites/ftp.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION:0:3}.tgz | \
+    curl https://www.mirrorservice.org/sites/ftp.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz | \
     tar -xz -C ${SPARK_EXTRACT_LOC} && \
     mkdir -p ${SPARK_HOME} && \
     mv ${SPARK_EXTRACT_LOC}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION:0:3}/* ${SPARK_HOME} && \
@@ -100,5 +96,4 @@ RUN set -eux && \\
 COPY log4j.properties.production ${SPARK_HOME}/conf/log4j.properties
 
 ## To build your own image:
-ONBUILD COPY hadoop/conf/ ${HADOOP_CONF_DIR}/
 ONBUILD COPY dags/ ${AIRFLOW_DAG}
