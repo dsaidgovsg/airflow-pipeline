@@ -22,5 +22,7 @@ do
             "--build-arg=SPARK_VARIANT=${SPARK_VARIANT}" \
             .
     fi
+    
+    docker push "$REPO:$tag"
 done
 
