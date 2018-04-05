@@ -57,8 +57,6 @@ RUN pip install -r "${AIRFLOW_HOME}/requirements.txt"
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
-## To build your own image:
-# ONBUILD COPY dags/ ${AIRFLOW_DAG}
 
 FROM no-spark AS with-spark
 
@@ -68,8 +66,11 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 ARG SPARK_VERSION
-ARG SPARK_VARIANT
+ARG HADOOP_VERSION
 ARG SPARK_PY4J
+
+ENV HADOOP_HOME /opt/hadoop
+ENV PATH ${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin
 
 ENV SPARK_HOME=/opt/spark-${SPARK_VERSION}
 ENV PATH=$PATH:${SPARK_HOME}/bin
@@ -78,12 +79,15 @@ ENV PYSPARK_SUBMIT_ARGS="--driver-memory 8g --py-files ${SPARK_HOME}/python/lib/
 
 # Download Spark
 ARG SPARK_EXTRACT_LOC=/sparkbin
-RUN set -eux && \
+RUN set -eux && \\
+    curl https://www.mirrorservice.org/sites/ftp.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | \
+    tar -xz -C /opt/ && \
+    mv /opt/hadoop-${HADOOP_VERSION} /opt/hadoop && \
     mkdir -p ${SPARK_EXTRACT_LOC} && \
-    curl https://www.mirrorservice.org/sites/ftp.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-${SPARK_VARIANT}.tgz |\
+    curl https://www.mirrorservice.org/sites/ftp.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION:0:3}.tgz | \
     tar -xz -C ${SPARK_EXTRACT_LOC} && \
     mkdir -p ${SPARK_HOME} && \
-    mv ${SPARK_EXTRACT_LOC}/spark-${SPARK_VERSION}-bin-${SPARK_VARIANT}/* ${SPARK_HOME} && \
+    mv ${SPARK_EXTRACT_LOC}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION:0:3}/* ${SPARK_HOME} && \
     rm -rf ${SPARK_EXTRACT_LOC} && \
     echo SPARK_HOME is ${SPARK_HOME} && \
     ls -al --g ${SPARK_HOME}
@@ -91,4 +95,5 @@ RUN set -eux && \
 # Less verbose logging
 COPY log4j.properties.production ${SPARK_HOME}/conf/log4j.properties
 
-
+## To build your own image:
+ONBUILD COPY dags/ ${AIRFLOW_DAG}
