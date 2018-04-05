@@ -7,7 +7,7 @@ which gosu
 
 cat <<EOF >/tmp/testscript.scala
 try {
-    sc.parallelize(0 until 1000).reduce(_ + _) = (500 * 999)
+    require { sc.parallelize(0 until 1000).reduce(_ + _) == (500 * 999) }
     System.exit(0)
 } catch {
     case _: Throwable => System.exit(1)
