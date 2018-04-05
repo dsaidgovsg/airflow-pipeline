@@ -22,7 +22,7 @@ env:
 - SPARK_VERSION=1.6.3
   HADOOP_VERSION=2.6.5
   SPARK_PY4J=python/lib/py4j-0.9-src.zip
-  DOCKER_TAGS=spark-1.6 latest
+  DOCKER_TAGS="spark-1.6 latest"
 - DOCKER_TAGS=no-spark
 after_success:
 - if [ "$TRAVIS_EVENT_TYPE" == "push" ] && [ "$TRAVIS_BRANCH" == "master" ]; then
