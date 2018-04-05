@@ -7,7 +7,11 @@ branches:
 services:
 - docker
 install:
-- docker build -t test-airflow:latest --no-cache --target no-spark .
+- docker build -t test-airflow:latest --no-cache 
+    --build-arg SPARK_VERSION=2.1.2 
+    --build-arg HADOOP_VERSION=2.6.5 
+    --build-arg SPARK_PY4J=python/lib/py4j-0.10.4-src.zip 
+    --target with-spark .
 script:
 - docker-compose -f tests/docker-compose.test.yml up
 env:

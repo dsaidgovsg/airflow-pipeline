@@ -79,18 +79,18 @@ ENV PYSPARK_SUBMIT_ARGS="--driver-memory 8g --py-files ${SPARK_HOME}/python/lib/
 
 # Download Spark
 ARG SPARK_EXTRACT_LOC=/sparkbin
-RUN set -eux && \\
-    curl https://www.mirrorservice.org/sites/ftp.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | \
-    tar -xz -C /opt/ && \
+RUN ["/bin/bash", "-c", "set -eoux pipefail && \
+    (curl https://www.mirrorservice.org/sites/ftp.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | \
+    tar -xz -C /opt/) && \
     mv /opt/hadoop-${HADOOP_VERSION} /opt/hadoop && \
     mkdir -p ${SPARK_EXTRACT_LOC} && \
-    curl https://www.mirrorservice.org/sites/ftp.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION:0:3}.tgz | \
-    tar -xz -C ${SPARK_EXTRACT_LOC} && \
+    (curl https://www.mirrorservice.org/sites/ftp.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION:0:3}.tgz | \
+    tar -xz -C ${SPARK_EXTRACT_LOC}) && \
     mkdir -p ${SPARK_HOME} && \
     mv ${SPARK_EXTRACT_LOC}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION:0:3}/* ${SPARK_HOME} && \
     rm -rf ${SPARK_EXTRACT_LOC} && \
     echo SPARK_HOME is ${SPARK_HOME} && \
-    ls -al --g ${SPARK_HOME}
+    ls -al --g ${SPARK_HOME}"]
 
 # Less verbose logging
 COPY log4j.properties.production ${SPARK_HOME}/conf/log4j.properties
