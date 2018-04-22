@@ -95,5 +95,8 @@ RUN ["/bin/bash", "-c", "set -eoux pipefail && \
 # Less verbose logging
 COPY log4j.properties.production ${SPARK_HOME}/conf/log4j.properties
 
+
+FROM with-spark AS with-spark-onbuild
+
 ## To build your own image:
 ONBUILD COPY dags/ ${AIRFLOW_DAG}
