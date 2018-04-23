@@ -58,7 +58,7 @@ COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 
-FROM no-spark AS with-spark
+FROM no-spark AS with-spark-optional-dag
 
 # Install Java
 RUN apt-get update \
@@ -94,6 +94,9 @@ RUN ["/bin/bash", "-c", "set -eoux pipefail && \
 
 # Less verbose logging
 COPY log4j.properties.production ${SPARK_HOME}/conf/log4j.properties
+
+
+FROM with-spark-optional-dag AS with-spark
 
 ## To build your own image:
 ONBUILD COPY dags/ ${AIRFLOW_DAG}
