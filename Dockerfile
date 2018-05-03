@@ -24,7 +24,7 @@ VOLUME ${AIRFLOW_HOME}/logs
 COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 COPY unittests.cfg ${AIRFLOW_HOME}/unittests.cfg
 
-# Delay creation of user and group
+# Create default user and group
 ENV USER afpuser
 ENV GROUP hadoop
 RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
