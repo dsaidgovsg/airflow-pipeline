@@ -4,6 +4,9 @@ set -euo pipefail
 export SPARK_DIST_CLASSPATH=$(hadoop classpath)
 POSTGRES_TIMEOUT=60
 
+getent group ${GROUP} || groupadd -r ${GROUP}
+id ${USER} || useradd -rmg ${GROUP} ${USER}
+
 echo "Running as: ${USER}"
 if [ "${USER}" != "root" ]; then
   echo "Changing owner of files in ${AIRFLOW_HOME} to ${USER}"

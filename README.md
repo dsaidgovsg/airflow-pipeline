@@ -35,15 +35,13 @@ Place the airflow DAGs in ./dags which will be copied into the image
 
 #### Hadoop user and group
 
-The default docker user is 'afpuser' and group is 'hadoop'. Subsequent images that bases on this image can change the user by specifying docker arguments for 'THEUSER' and 'THEGROUP' respectively. For example, the Compose file that is based on this image would look something like this:
+The default docker user is 'afpuser' and group is 'hadoop'. Subsequent images that bases on this image can change the user by specifying docker env vars for 'USER' and 'GROUP' respectively. For example, the Compose file that is based on this image would look something like this:
 
 ```
   scheduler:
-    build:
-      context: .
-      args:
-        THEUSER: someuser
-        THEGROUP: somegroup
+    environment:
+      USER: someuser
+      GROUP: somegroup
     command: ["some-scheduler"]
     ...
 ```
