@@ -24,13 +24,10 @@ VOLUME ${AIRFLOW_HOME}/logs
 COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 COPY unittests.cfg ${AIRFLOW_HOME}/unittests.cfg
 
-# Delay creation of user and group
-ONBUILD ARG THEUSER=afpuser
-ONBUILD ARG THEGROUP=hadoop
-
-ONBUILD ENV USER ${THEUSER}
-ONBUILD ENV GROUP ${THEGROUP}
-ONBUILD RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
+# Create default user and group
+ENV USER afpuser
+ENV GROUP hadoop
+RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
 
 # Number of times the Airflow scheduler will run before it terminates (and restarts)
 ENV SCHEDULER_RUNS=5
