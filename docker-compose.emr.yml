@@ -95,7 +95,7 @@ services:
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@postgres:5432/airflow
     hostname: webserver
     ports:
-      - 8080:8080
+      - 8888:8080
     restart: always
     volumes_from:
       - scheduler

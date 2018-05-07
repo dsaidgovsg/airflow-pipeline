@@ -67,7 +67,9 @@ To start the Airflow containers in the master instance,
 sudo /usr/local/bin/docker-compose -f docker-compose.emr.yml up -d
 ```
 
-*Tested on Amazon EMR 5*
+Airflow webserver runs at port 8888 as port 8080 is used by Tez on EMR.
+
+*Tested on Amazon EMR 5.*
 
 # Deployment using Docker
 
