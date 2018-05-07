@@ -67,6 +67,8 @@ To start the Airflow containers in the master instance,
 sudo /usr/local/bin/docker-compose -f docker-compose.emr.yml up -d
 ```
 
+*Tested on Amazon EMR 5*
+
 # Deployment using Docker
 
 ## Docker image
