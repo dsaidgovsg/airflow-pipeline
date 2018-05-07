@@ -58,6 +58,19 @@ The configuration contained in this directory will be distributed to the YARN cl
 
 See also http://spark.apache.org/docs/latest/running-on-yarn.html
 
+# Deploy on Amazon EMR cluster
+
+The Airflow scheduler and webserver containers can be deployed on an Amazon EMR cluster in the master node. Docker engine and Docker compose has to be installed on the EMR master instance either by preparing a custom AMI or using bootstrap actions. The building of the custom AMI, secrets management and encryption are beyond the scope of this README. Regardless, consider provisioning an EMR cluster quickly using [Terraform](https://www.terraform.io/) and the [terraform-aws-emr-cluster module](https://github.com/chrissng/terraform-aws-emr-cluster)
+
+To start the Airflow containers in the master instance,
+```bash
+sudo /usr/local/bin/docker-compose -f docker-compose.emr.yml up -d
+```
+
+Airflow webserver runs at port 8888 as port 8080 is used by Tomcat (Apache Tez).
+
+*Tested on Amazon EMR 5.*
+
 # Deployment using Docker
 
 ## Docker image
