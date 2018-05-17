@@ -83,7 +83,7 @@ ARG SPARK_PY4J
 
 ARG hadoop_home=/opt/hadoop
 ENV HADOOP_HOME=${hadoop_home}
-ENV PATH ${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin
+ENV PATH=${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin
 
 ENV SPARK_HOME=/opt/spark-${SPARK_VERSION}
 ENV PATH=$PATH:${SPARK_HOME}/bin
