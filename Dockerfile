@@ -1,14 +1,15 @@
-FROM python:2.7 AS no-spark
+FROM python:2.7-slim-stretch AS no-spark
 LABEL maintainer="Chris Sng <chris@data.gov.sg>"
 
 # Setup airflow
 RUN set -ex \
-    && (echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/backports.list) \
+    && apt-get update
+
+RUN set -ex \
     && apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --force-yes vim-tiny libsasl2-dev libffi-dev gosu krb5-user \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y vim-tiny libsasl2-dev libffi-dev gosu default-libmysqlclient-dev libkrb5-dev build-essential curl \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.9.0" psycopg2 \
-    && pip install --no-cache-dir sqlalchemy==1.1.17
+    && pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.9.0" psycopg2 "sqlalchemy==1.1.17"
 
 ARG airflow_home=/airflow
 ENV AIRFLOW_HOME=${airflow_home}
@@ -70,8 +71,9 @@ ENTRYPOINT ["/entrypoint.sh"]
 FROM no-spark AS with-spark-optional-dag
 
 # Install Java
-RUN apt-get update \
-    && apt-get install -t jessie-backports --no-install-recommends -y openjdk-8-jre-headless \
+RUN mkdir /usr/share/man/man1 \
+    && apt-get update \
+    && apt-get install --no-install-recommends -y openjdk-8-jre-headless \
     && rm -rf /var/lib/apt/lists/*
 
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
