@@ -1,5 +1,5 @@
 FROM python:2.7 AS no-spark
-MAINTAINER Chris Sng <chris@data.gov.sg>
+LABEL maintainer="Chris Sng <chris@data.gov.sg>"
 
 # Setup airflow
 RUN set -ex \
@@ -10,12 +10,13 @@ RUN set -ex \
     && pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.9.0" psycopg2 \
     && pip install --no-cache-dir sqlalchemy==1.1.17
 
-ENV AIRFLOW_HOME /airflow
+ARG airflow_home=/airflow
+ENV AIRFLOW_HOME=${airflow_home}
 
 WORKDIR ${AIRFLOW_HOME}
 
 # Setup airflow dags path
-ENV AIRFLOW_DAG ${AIRFLOW_HOME}/dags
+ENV AIRFLOW_DAG=${AIRFLOW_HOME}/dags
 
 RUN mkdir -p ${AIRFLOW_DAG}
 
@@ -25,25 +26,36 @@ COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 COPY unittests.cfg ${AIRFLOW_HOME}/unittests.cfg
 
 # Create default user and group
-ENV USER afpuser
-ENV GROUP hadoop
+ARG user=afpuser
+ENV USER=${user}
+ARG group=hadoop
+ENV GROUP=${group}
 RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
 
 # Number of times the Airflow scheduler will run before it terminates (and restarts)
-ENV SCHEDULER_RUNS=5
+ARG scheduler_runs=5
+ENV SCHEDULER_RUNS=${scheduler_runs}
 # parallelism = number of physical python processes the scheduler can run
-ENV AIRFLOW__CORE__PARALLELISM=8
+ARG airflow__core__parallelism=8
+ENV AIRFLOW__CORE__PARALLELISM=${airflow__core__parallelism}
 # dag_concurrency = the number of TIs to be allowed to run PER-dag at once
-ENV AIRFLOW__CORE__DAG_CONCURRENCY=6
+ARG airflow__core__dag_concurrency=6
+ENV AIRFLOW__CORE__DAG_CONCURRENCY=${airflow__core__dag_concurrency}
 # max_threads = number of processes to parallelize the scheduler over, cannot exceed the cpu count
-ENV AIRFLOW__SCHEDULER__MAX_THREADS=4
+ARG airflow__scheduler__max_threads=4
+ENV AIRFLOW__SCHEDULER__MAX_THREADS=${airflow__scheduler__max_threads}
 
 # Airflow uses postgres as its database, following are the examples env vars
-ENV POSTGRES_HOST=localhost
-ENV POSTGRES_PORT=5999
-ENV POSTGRES_USER=fixme
-ENV POSTGRES_PASSWORD=fixme
-ENV POSTGRES_DB=airflow
+ARG postgres_host=localhost
+ENV POSTGRES_HOST=${postgres_host}
+ARG postgres_port=5999
+ENV POSTGRES_PORT=${postgres_port}
+ARG postgres_user=fixme
+ENV POSTGRES_USER=${postgres_user}
+ARG postgres_password=fixme
+ENV POSTGRES_PASSWORD=${postgres_password}
+ARG postgres_db=airflow
+ENV POSTGRES_DB=${postgres_db}
 
 WORKDIR ${AIRFLOW_HOME}
 
@@ -59,15 +71,18 @@ FROM no-spark AS with-spark-optional-dag
 
 # Install Java
 RUN apt-get update \
-  && apt-get install -t jessie-backports --no-install-recommends -y openjdk-8-jre-headless \
-  && rm -rf /var/lib/apt/lists/*
+    && apt-get install -t jessie-backports --no-install-recommends -y openjdk-8-jre-headless \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 ARG SPARK_VERSION
 ARG HADOOP_VERSION
 ARG SPARK_PY4J
 
-ENV HADOOP_HOME /opt/hadoop
-ENV PATH ${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin
+ARG hadoop_home=/opt/hadoop
+ENV HADOOP_HOME=${hadoop_home}
+ENV PATH=${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin
 
 ENV SPARK_HOME=/opt/spark-${SPARK_VERSION}
 ENV PATH=$PATH:${SPARK_HOME}/bin
