@@ -74,8 +74,7 @@ RUN apt-get update \
     && apt-get install -t jessie-backports --no-install-recommends -y openjdk-8-jre-headless \
     && rm -rf /var/lib/apt/lists/*
 
-ARG java_home=/usr/lib/jvm/java-8-openjdk-amd64
-ENV JAVA_HOME=${java_home}
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 ARG SPARK_VERSION
 ARG HADOOP_VERSION
