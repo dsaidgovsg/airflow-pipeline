@@ -7,7 +7,8 @@ RUN set -ex \
 
 RUN set -ex \
     && apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y vim-tiny libsasl2-dev libffi-dev gosu default-libmysqlclient-dev libkrb5-dev build-essential curl \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --force-yes vim-tiny libsasl2-dev libffi-dev gosu krb5-user \
+    default-libmysqlclient-dev libkrb5-dev build-essential curl \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.9.0" psycopg2 "sqlalchemy==1.1.17"
 
