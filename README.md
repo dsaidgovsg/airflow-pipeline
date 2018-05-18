@@ -71,7 +71,7 @@ Logging to S3 bucket is enabled by the following lines in [`docker-compose.emr.y
 
 ```yml
 AIRFLOW__CORE__TASK_LOG_READER: s3.task
-AIRFLOW__CORE__LOGGING_CONFIG_CLASS: log_config.LOGGING_CONFIG
+AIRFLOW__CORE__LOGGING_CONFIG_CLASS: s3_log_config.LOGGING_CONFIG
 S3_LOG_FOLDER: s3://fixme/
 ```
 
