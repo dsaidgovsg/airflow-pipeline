@@ -107,6 +107,8 @@ RUN ["/bin/bash", "-c", "set -eoux pipefail && \
 # Less verbose logging
 COPY log4j.properties.production ${SPARK_HOME}/conf/log4j.properties
 
+# for optional S3 logging
+COPY ./config/ ${AIRFLOW_HOME}/config/
 
 FROM with-spark-optional-dag AS with-spark
 

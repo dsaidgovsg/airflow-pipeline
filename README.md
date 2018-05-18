@@ -67,6 +67,16 @@ To start the Airflow containers in the master instance,
 sudo /usr/local/bin/docker-compose -f docker-compose.emr.yml up -d
 ```
 
+Logging to S3 bucket is enabled by the following lines in [`docker-compose.emr.yml`](./docker-compose.emr.yml):
+
+```yml
+AIRFLOW__CORE__TASK_LOG_READER: s3.task
+AIRFLOW__CORE__LOGGING_CONFIG_CLASS: s3_log_config.LOGGING_CONFIG
+S3_LOG_FOLDER: s3://fixme/
+```
+
+To disable S3 logging, simply comment out the above three lines of configuration.
+
 Airflow webserver runs at port 8888 as port 8080 is used by Tomcat (Apache Tez).
 
 *Tested on Amazon EMR 5.*

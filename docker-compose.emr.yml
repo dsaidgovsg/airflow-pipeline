@@ -22,6 +22,11 @@ services:
     environment:
       AIRFLOW__CORE__FERNET_KEY: ZZvP_7JEhKfQ7v5sg1DV1o4b1DcGv3Tu9vJXzEKkxbE=
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@localhost:5999/airflow
+      # FOR S3 LOGGING, COMMENT OUT THE BELOW 3 LINES TO DISABLE S3 LOGGING
+      # S3_LOG_FOLDER FORMAT: s3://bucket/[directories]
+      AIRFLOW__CORE__TASK_LOG_READER: s3.task
+      AIRFLOW__CORE__LOGGING_CONFIG_CLASS: s3_log_config.LOGGING_CONFIG
+      S3_LOG_FOLDER: s3://fixme/
       # IMPORTANT ENV VARS FOR EMR BELOW
       SPARK_HOME: /usr/lib/spark
       PYTHONPATH: /usr/lib/spark/python:/usr/lib/spark/python/lib/py4j-src.zip
