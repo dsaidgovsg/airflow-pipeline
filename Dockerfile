@@ -7,7 +7,7 @@ RUN set -ex \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --force-yes vim-tiny libsasl2-dev libffi-dev gosu krb5-user \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.10.0" psycopg2
+    && AIRFLOW_GPL_UNIDECODE=yes pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.10.0" psycopg2
 
 ARG airflow_home=/airflow
 ENV AIRFLOW_HOME=${airflow_home}
