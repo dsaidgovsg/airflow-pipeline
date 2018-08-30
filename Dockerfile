@@ -1,16 +1,13 @@
 FROM python:2.7 AS no-spark
 LABEL maintainer="Chris Sng <chris@data.gov.sg>"
 
-ARG airflow_version=1.10.0
-ENV AIRFLOW_VERSION=${airflow_version}
-
 # Setup airflow
 RUN set -ex \
     && (echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/backports.list) \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --force-yes vim-tiny libsasl2-dev libffi-dev gosu krb5-user \
     && rm -rf /var/lib/apt/lists/* \
-    && SLUGIFY_USES_TEXT_UNIDECODE=yes pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==${AIRFLOW_VERSION}" psycopg2
+    && SLUGIFY_USES_TEXT_UNIDECODE=yes pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.10.0" psycopg2
 
 ARG airflow_home=/airflow
 ENV AIRFLOW_HOME=${airflow_home}
