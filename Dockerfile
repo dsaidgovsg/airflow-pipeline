@@ -1,13 +1,16 @@
 FROM python:2.7 AS no-spark
 LABEL maintainer="Chris Sng <chris@data.gov.sg>"
 
+# Expects 1.X.X
+ARG AIRFLOW_VERSION
+
 # Setup airflow
 RUN set -ex \
     && (echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/backports.list) \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --force-yes vim-tiny libsasl2-dev libffi-dev gosu krb5-user \
     && rm -rf /var/lib/apt/lists/* \
-    && SLUGIFY_USES_TEXT_UNIDECODE=yes pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.10.0" psycopg2
+    && SLUGIFY_USES_TEXT_UNIDECODE=yes pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==${AIRFLOW_VERSION}" psycopg2
 
 ARG airflow_home=/airflow
 ENV AIRFLOW_HOME=${airflow_home}
@@ -21,7 +24,7 @@ RUN mkdir -p ${AIRFLOW_DAG}
 
 COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
 VOLUME ${AIRFLOW_HOME}/logs
-COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+COPY airflow/${AIRFLOW_VERSION:0:3}/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 COPY unittests.cfg ${AIRFLOW_HOME}/unittests.cfg
 
 # Create default user and group
