@@ -91,7 +91,7 @@ ENV PYSPARK_SUBMIT_ARGS="--driver-memory 8g --py-files ${SPARK_HOME}/python/lib/
 # Download Spark
 ARG SPARK_EXTRACT_LOC=/sparkbin
 RUN ["/bin/bash", "-c", "set -eoux pipefail && \
-    (curl https://www.mirrorservice.org/sites/ftp.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | \
+    (curl https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | \
     tar -xz -C /opt/) && \
     mv /opt/hadoop-${HADOOP_VERSION} /opt/hadoop && \
     mkdir -p ${SPARK_EXTRACT_LOC} && \
