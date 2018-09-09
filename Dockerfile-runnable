@@ -1,2 +1,0 @@
-FROM datagovsg/airflow-pipeline:latest
-LABEL maintainer="Chris Sng <chris@data.gov.sg>"
