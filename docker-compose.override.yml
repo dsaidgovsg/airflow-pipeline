@@ -1,12 +1,8 @@
-version: '2'
+version: '2.3'
 services:
   scheduler:
     volumes:
       - ./dags:/airflow/dags
-    environment:
-      AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
   webserver:
     volumes:
       - ./dags:/airflow/dags
-    environment:
-      AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=

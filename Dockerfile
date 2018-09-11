@@ -1,13 +1,20 @@
 FROM python:2.7 AS no-spark
-LABEL maintainer="Chris Sng <chris@data.gov.sg>"
 
 # Setup airflow
 RUN set -ex \
     && (echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/backports.list) \
     && apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --force-yes vim-tiny libsasl2-dev libffi-dev gosu krb5-user \
-    && rm -rf /var/lib/apt/lists/* \
-    && SLUGIFY_USES_TEXT_UNIDECODE=yes pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto]==1.10.0" psycopg2
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --force-yes build-essential libkrb5-dev libsasl2-dev libffi-dev default-libmysqlclient-dev vim-tiny gosu krb5-user \
+    && apt-get purge --auto-remove -yqq \
+    && apt-get autoremove -yqq --purge \
+    && apt-get clean \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /var/tmp/* \
+        /usr/share/doc \
+        /usr/share/doc-base \
+    && SLUGIFY_USES_TEXT_UNIDECODE=yes pip install --no-cache-dir "apache-airflow[devel_hadoop, crypto, celery]==1.10.0" "celery[redis]>=4.1.1,<4.2.0" psycopg2
 
 ARG airflow_home=/airflow
 ENV AIRFLOW_HOME=${airflow_home}
@@ -19,10 +26,9 @@ ENV AIRFLOW_DAG=${AIRFLOW_HOME}/dags
 
 RUN mkdir -p ${AIRFLOW_DAG}
 
-COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
-VOLUME ${AIRFLOW_HOME}/logs
 COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 COPY unittests.cfg ${AIRFLOW_HOME}/unittests.cfg
+COPY webserver_config.py ${AIRFLOW_HOME}/webserver_config.py
 
 # Create default user and group
 ARG user=afpuser
@@ -44,23 +50,16 @@ ENV AIRFLOW__CORE__DAG_CONCURRENCY=${airflow__core__dag_concurrency}
 ARG airflow__scheduler__max_threads=4
 ENV AIRFLOW__SCHEDULER__MAX_THREADS=${airflow__scheduler__max_threads}
 
-# Airflow uses postgres as its database, following are the examples env vars
-ARG postgres_host=localhost
-ENV POSTGRES_HOST=${postgres_host}
-ARG postgres_port=5999
-ENV POSTGRES_PORT=${postgres_port}
-ARG postgres_user=fixme
-ENV POSTGRES_USER=${postgres_user}
-ARG postgres_password=fixme
-ENV POSTGRES_PASSWORD=${postgres_password}
-ARG postgres_db=airflow
-ENV POSTGRES_DB=${postgres_db}
+ENV AIRFLOW__CORE__EXECUTOR=LocalExecutor
 
 WORKDIR ${AIRFLOW_HOME}
 
 # Setup pipeline dependencies
 COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
 RUN pip install -r "${AIRFLOW_HOME}/requirements.txt"
+
+# For optional S3 logging
+COPY ./config/ ${AIRFLOW_HOME}/config/
 
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
@@ -75,9 +74,9 @@ RUN apt-get update \
 
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
-ARG SPARK_VERSION
-ARG HADOOP_VERSION
-ARG SPARK_PY4J
+ARG SPARK_VERSION=2.1.2
+ARG HADOOP_VERSION=2.6.5
+ARG SPARK_PY4J=python/lib/py4j-0.10.4-src.zip
 
 ARG hadoop_home=/opt/hadoop
 ENV HADOOP_HOME=${hadoop_home}
@@ -106,8 +105,6 @@ RUN ["/bin/bash", "-c", "set -eoux pipefail && \
 # Less verbose logging
 COPY log4j.properties.production ${SPARK_HOME}/conf/log4j.properties
 
-# for optional S3 logging
-COPY ./config/ ${AIRFLOW_HOME}/config/
 
 FROM with-spark-optional-dag AS with-spark
 

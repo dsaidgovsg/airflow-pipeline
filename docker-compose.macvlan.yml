@@ -1,4 +1,4 @@
-version: '2'
+version: '2.3'
 services:
   postgres:
     image: postgres:9.6
@@ -15,7 +15,8 @@ services:
   scheduler:
     build:
       context: .
-      dockerfile: Dockerfile-runnable
+      target: with-spark-optional-dag
+      dockerfile: Dockerfile
     networks:
       - afpnet
     restart: always
@@ -36,7 +37,8 @@ services:
   webserver:
     build:
       context: .
-      dockerfile: Dockerfile-runnable
+      target: with-spark-optional-dag
+      dockerfile: Dockerfile
     networks:
       - afpnet
     restart: always

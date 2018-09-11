@@ -1,9 +1,7 @@
-version: '2'
+version: '2.3'
 services:
   postgres:
     image: postgres:9.6
-    ports:
-      - 127.0.0.1:5999:5432
     restart: always
     volumes:
       - postgres:/var/lib/postgresql/data
@@ -11,18 +9,18 @@ services:
       POSTGRES_USER: fixme
       POSTGRES_PASSWORD: fixme
       POSTGRES_DB: airflow
-      TZ: "Asia/Singapore"
+
   scheduler:
     build:
       context: .
-      dockerfile: Dockerfile-runnable
-    network_mode: "host"
+      target: with-spark-optional-dag
+      dockerfile: Dockerfile
     restart: always
     depends_on:
       - postgres
     environment:
-      TZ: "Asia/Singapore"
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@localhost:5999/airflow
+      AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@postgres:5432/airflow
       PYSPARK_SUBMIT_ARGS: --driver-memory 16g --packages com.databricks:spark-csv_2.10:1.5.0,com.databricks:spark-avro_2.10:2.0.1,graphframes:graphframes:0.1.0-spark1.6 pyspark-shell
 #      PYSPARK_SUBMIT_ARGS: --driver-memory 16g --packages com.databricks:spark-csv_2.11:1.5.0,com.databricks:spark-avro_2.11:3.1.0,graphframes:graphframes:0.3.0-spark2.0-s_2.11 pyspark-shell
       PYSPARK_PYTHON: /usr/local/bin/python2.7
@@ -34,16 +32,19 @@ services:
   webserver:
     build:
       context: .
-      dockerfile: Dockerfile-runnable
-    network_mode: "host"
+      target: with-spark-optional-dag
+      dockerfile: Dockerfile
     restart: always
     depends_on:
       - scheduler
     environment:
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@localhost:5999/airflow
+      AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@postgres:5432/airflow
       AIRFLOW_USER: fixme
       AIRFLOW_EMAIL: fixme@fix.me
       AIRFLOW_PASSWORD: fixme
+    ports:
+      - 127.0.0.1:8080:8080
     command: afp-webserver
     volumes_from:
       - scheduler

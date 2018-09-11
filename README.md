@@ -87,7 +87,10 @@ Airflow webserver runs at port 8888 as port 8080 is used by Tomcat (Apache Tez).
 
 You might have to `docker login` first before you can build any images.
 
-To change the environment variables, edit `docker-compose.yml` instead of `Dockerfile` without the need to rebuild the docker image.
+To change the environment variables, edit `docker-compose.yml` instead of
+`Dockerfile` without the need to rebuild the docker image.
+
+### Local Airflow
 
 To start, use only the `docker-compose.yml` file i.e. `docker-compose -p afp -f docker-compose.yml up --build -d`
 
@@ -98,6 +101,10 @@ Make sure that the containers also have name resolution configured so it can com
 ```bash
 docker network create -d macvlan --subnet=192.168.150.0/24 --ip-range=192.168.150.48/28 -o parent=p2p1 afpnet
 ```
+
+### Distributed Airflow
+
+To start distributed Airflow (using Celery), `docker-compose -f docker-compose.yml -f docker-compose.celeryexecutor.yml up --scale worker=3 -d` with three Airflow workers.
 
 To bring the containers up for development, use also the `docker-compose.override.yml`. This will additionally create a volume at `./dags` and mounted in the container at `/airflow/dags`, allowing you to do edit the DAG files directly on your development machine and having them updated with the container immediately.
 

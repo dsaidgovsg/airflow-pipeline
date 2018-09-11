@@ -1,4 +1,4 @@
-version: '2.2'
+version: '2.3'
 services:
   postgres:
     hostname: postgres
@@ -15,7 +15,8 @@ services:
   scheduler:
     build:
       context: .
-      dockerfile: Dockerfile-runnable
+      target: with-spark-optional-dag
+      dockerfile: Dockerfile
     command: ['afp-scheduler']
     depends_on:
       - postgres
@@ -88,7 +89,8 @@ services:
   webserver:
     build:
       context: .
-      dockerfile: Dockerfile-runnable
+      target: with-spark-optional-dag
+      dockerfile: Dockerfile
     command: ['afp-webserver']
     depends_on:
       - scheduler
