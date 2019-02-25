@@ -1,6 +1,8 @@
 version: '2.3'
 services:
   scheduler:
+    environment:
+      AIRFLOW_SCHEDULER_INITDB: "true"
     volumes:
       - ./dags:/airflow/dags
   webserver:
