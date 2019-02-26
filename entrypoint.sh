@@ -62,7 +62,9 @@ wait_for_redis() {
 if [ "$1" = 'afp-scheduler' ]; then
   wait_for_postgres
   wait_for_redis
-  gosu "${USER}" airflow initdb
+  if [ "$AIRFLOW_SCHEDULER_INITDB" = "true" ]; then
+    gosu "${USER}" airflow initdb
+  fi
   (while :; do echo 'Serving logs'; gosu "${USER}" airflow serve_logs; sleep 1; done) &
   (while :; do echo 'Starting scheduler'; gosu "${USER}" airflow scheduler -n ${SCHEDULER_RUNS}; sleep 1; done)
 elif [ "$1" = 'afp-webserver' ]; then
