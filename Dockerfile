@@ -2,7 +2,7 @@ FROM python:2.7 AS no-spark
 
 # Setup airflow
 RUN set -ex \
-    && (echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/backports.list) \
+    && (echo 'deb http://deb.debian.org/debian stretch-backports main' > /etc/apt/sources.list.d/backports.list) \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --force-yes build-essential libkrb5-dev libsasl2-dev libffi-dev default-libmysqlclient-dev vim-tiny gosu krb5-user \
     && apt-get purge --auto-remove -yqq \
@@ -69,7 +69,7 @@ FROM no-spark AS with-spark-optional-dag
 
 # Install Java
 RUN apt-get update \
-    && apt-get install -t jessie-backports --no-install-recommends -y openjdk-8-jre-headless \
+    && apt-get --no-install-recommends -y install default-jre \
     && rm -rf /var/lib/apt/lists/*
 
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
