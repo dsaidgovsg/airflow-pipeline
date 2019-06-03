@@ -14,8 +14,7 @@ RUN set -ex \
         /var/tmp/* \
         /usr/share/doc \
         /usr/share/doc-base \
-    && pip install pip==18.1 \
-    && SLUGIFY_USES_TEXT_UNIDECODE=yes pip install --no-cache-dir "apache-airflow[devel_hadoop,crypto,celery,redis,postgres,jdbc,ssh]==1.10.2" psycopg2
+    && pip install --no-cache-dir "apache-airflow[devel_hadoop,crypto,celery,redis,postgres,jdbc,ssh]==1.10.3" psycopg2
 
 ARG airflow_home=/airflow
 ENV AIRFLOW_HOME=${airflow_home}
