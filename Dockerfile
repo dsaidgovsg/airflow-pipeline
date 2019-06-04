@@ -1,8 +1,8 @@
-FROM python:2.7 AS no-spark
+FROM python:2.7-stretch AS no-spark
 
 # Setup airflow
 RUN set -ex \
-    && (echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/backports.list) \
+    && (echo 'deb http://deb.debian.org/debian stretch-backports main' > /etc/apt/sources.list.d/backports.list) \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --force-yes build-essential libkrb5-dev libsasl2-dev libffi-dev default-libmysqlclient-dev vim-tiny gosu krb5-user \
     && apt-get purge --auto-remove -yqq \
@@ -14,8 +14,7 @@ RUN set -ex \
         /var/tmp/* \
         /usr/share/doc \
         /usr/share/doc-base \
-    && pip install pip==18.1 \
-    && SLUGIFY_USES_TEXT_UNIDECODE=yes pip install --no-cache-dir "apache-airflow[devel_hadoop,crypto,celery,redis,postgres,jdbc,ssh]==1.10.2" psycopg2
+    && pip install --no-cache-dir "apache-airflow[devel_hadoop,crypto,celery,redis,postgres,jdbc,ssh]==1.10.3" psycopg2
 
 ARG airflow_home=/airflow
 ENV AIRFLOW_HOME=${airflow_home}
@@ -70,7 +69,7 @@ FROM no-spark AS with-spark-optional-dag
 
 # Install Java
 RUN apt-get update \
-    && apt-get install -t jessie-backports --no-install-recommends -y openjdk-8-jre-headless \
+    && apt-get install --no-install-recommends -y openjdk-8-jre-headless \
     && rm -rf /var/lib/apt/lists/*
 
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
