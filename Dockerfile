@@ -1,4 +1,4 @@
-FROM python:2.7 AS no-spark
+FROM python:2.7-stretch AS no-spark
 
 # Setup airflow
 RUN set -ex \
@@ -69,7 +69,7 @@ FROM no-spark AS with-spark-optional-dag
 
 # Install Java
 RUN apt-get update \
-    && apt-get --no-install-recommends -y install default-jre \
+    && apt-get install --no-install-recommends -y openjdk-8-jre-headless \
     && rm -rf /var/lib/apt/lists/*
 
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
