@@ -1,0 +1,39 @@
+language: bash
+
+env:
+  global:
+  - IMAGE_NAME=guangie88/airflow-pipeline
+
+matrix:
+  include:
+{%- for v in versions %}
+  - services: docker
+    env:
+    - AIRFLOW_VERSION={{ v.airflow }}
+    - SPARK_VERSION={{ v.spark }}
+    - HADOOP_VERSION={{ v.hadoop }}
+    - SQLALCHEMY_VERSION={{ v.sqlalchemy }}
+    - DIST=debian
+{%- endfor %}
+
+script:
+- IMAGE_TAG="${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}_${DIST}"
+- PY4J_FILE=$(curl -s https://github.com/apache/spark/tree/v${SPARK_VERSION}/python/lib | grep -oE 'py4j-[^\s]+-src\.zip' | uniq)
+- echo "PY4J_FILE - ${PY4J_FILE}"
+- |-
+  docker build . -t "${IMAGE_NAME}:${IMAGE_TAG}" \
+    --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
+    --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
+    --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
+    --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
+    --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}"
+
+deploy:
+  provider: script
+  script: bash push-images.sh
+  on:
+    branch: master
+
+branches:
+  only:
+  - master

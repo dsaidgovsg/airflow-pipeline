@@ -1,31 +1,86 @@
-language: python
-python:
-- '2.7'
+language: bash
+
+env:
+  global:
+  - IMAGE_NAME=guangie88/airflow-pipeline
+
+matrix:
+  include:
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.9
+    - SPARK_VERSION=2.4.0
+    - HADOOP_VERSION=3.1.0
+    - SQLALCHEMY_VERSION=1.0
+    - DIST=debian
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.9
+    - SPARK_VERSION=2.4.0
+    - HADOOP_VERSION=3.1.0
+    - SQLALCHEMY_VERSION=1.1
+    - DIST=debian
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.9
+    - SPARK_VERSION=2.4.0
+    - HADOOP_VERSION=3.1.0
+    - SQLALCHEMY_VERSION=1.2
+    - DIST=debian
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.9
+    - SPARK_VERSION=2.4.0
+    - HADOOP_VERSION=3.1.0
+    - SQLALCHEMY_VERSION=1.3
+    - DIST=debian
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10
+    - SPARK_VERSION=2.4.0
+    - HADOOP_VERSION=3.1.0
+    - SQLALCHEMY_VERSION=1.0
+    - DIST=debian
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10
+    - SPARK_VERSION=2.4.0
+    - HADOOP_VERSION=3.1.0
+    - SQLALCHEMY_VERSION=1.1
+    - DIST=debian
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10
+    - SPARK_VERSION=2.4.0
+    - HADOOP_VERSION=3.1.0
+    - SQLALCHEMY_VERSION=1.2
+    - DIST=debian
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10
+    - SPARK_VERSION=2.4.0
+    - HADOOP_VERSION=3.1.0
+    - SQLALCHEMY_VERSION=1.3
+    - DIST=debian
+
+script:
+- IMAGE_TAG="${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}_${DIST}"
+- PY4J_FILE=$(curl -s https://github.com/apache/spark/tree/v${SPARK_VERSION}/python/lib | grep -oE 'py4j-[^\s]+-src\.zip' | uniq)
+- echo "PY4J_FILE - ${PY4J_FILE}"
+- |-
+  docker build . -t "${IMAGE_NAME}:${IMAGE_TAG}" \
+    --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
+    --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
+    --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
+    --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
+    --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}"
+
+deploy:
+  provider: script
+  script: bash push-images.sh
+  on:
+    branch: master
+
 branches:
   only:
   - master
-services:
-- docker
-install:
-- docker build -t test-airflow:latest --no-cache 
-    --build-arg SPARK_VERSION=2.1.2 
-    --build-arg HADOOP_VERSION=2.6.5 
-    --build-arg SPARK_PY4J=python/lib/py4j-0.10.4-src.zip 
-    --target with-spark .
-script:
-- docker-compose -f tests/docker-compose.test.yml up
-env:
-- SPARK_VERSION=2.1.2
-  HADOOP_VERSION=2.6.5
-  SPARK_PY4J=python/lib/py4j-0.10.4-src.zip
-  DOCKER_TAGS=spark-2.1
-- SPARK_VERSION=1.6.3
-  HADOOP_VERSION=2.6.5
-  SPARK_PY4J=python/lib/py4j-0.9-src.zip
-  DOCKER_TAGS="spark-1.6 latest"
-- DOCKER_TAGS=no-spark
-after_success:
-- if [ "$TRAVIS_EVENT_TYPE" == "push" ] && [ "$TRAVIS_BRANCH" == "master" ]; then
-      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS" ;
-      ./build-and-push-docker.sh ;
-  fi

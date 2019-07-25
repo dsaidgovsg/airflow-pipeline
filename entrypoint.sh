@@ -1,24 +1,32 @@
 #!/bin/bash
 set -euo pipefail
 
-export SPARK_DIST_CLASSPATH=$(hadoop classpath)
+SPARK_DIST_CLASSPATH="$(hadoop classpath)"
+export SPARK_DIST_CLASSPATH
+
 POSTGRES_TIMEOUT=60
 
-getent group ${GROUP} || groupadd -r ${GROUP}
-id ${USER} || useradd -rmg ${GROUP} ${USER}
+getent group "${GROUP}" || groupadd -r "${GROUP}"
+id "${USER}" || useradd -rmg "${GROUP}" "${USER}"
 
 echo "Running as: ${USER}"
 if [ "${USER}" != "root" ]; then
   echo "Changing owner of files in ${AIRFLOW_HOME} to ${USER}"
-  chown -R "${USER}" ${AIRFLOW_HOME} || true
+  chown -R "${USER}" "${AIRFLOW_HOME}" || true
 fi
 
 CONN_PARTS_REGEX='postgresql://\([-a-zA-Z0-9_]\+\):\([[:print:]]\+\)@\([-a-zA-Z0-9_\.]\+\):\([0-9]\+\)/\([[:print:]]\+\)'
-export POSTGRES_USER=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\1#')
-export POSTGRES_PASSWORD=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\2#')
-export POSTGRES_HOST=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\3#')
-export POSTGRES_PORT=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\4#')
-export POSTGRES_DB=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${CONN_PARTS_REGEX}'#\5#')
+
+POSTGRES_USER="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s/${CONN_PARTS_REGEX}/\1/")"
+export POSTGRES_USER
+POSTGRES_PASSWORD="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s/${CONN_PARTS_REGEX}/\2/")"
+export POSTGRES_PASSWORD
+POSTGRES_HOST="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s/${CONN_PARTS_REGEX}/\3/")"
+export POSTGRES_HOST
+POSTGRES_PORT="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s/${CONN_PARTS_REGEX}/\4/")"
+export POSTGRES_PORT
+POSTGRES_DB="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s/${CONN_PARTS_REGEX}/\5/")"
+export POSTGRES_DB
 
 set +e
 # Wait for Postgres to be available
@@ -45,11 +53,11 @@ gosu "${USER}" airflow initdb # https://groups.google.com/forum/#!topic/airbnb_a
 
 if [ "$1" = 'afp-scheduler' ]; then
   (while :; do echo 'Serving logs'; gosu "${USER}" airflow serve_logs; sleep 1; done) &
-  (while :; do echo 'Starting scheduler'; gosu "${USER}" airflow scheduler -n ${SCHEDULER_RUNS}; sleep 1; done)
+  (while :; do echo 'Starting scheduler'; gosu "${USER}" airflow scheduler -n "${SCHEDULER_RUNS}"; sleep 1; done)
 elif [ "$1" = 'afp-webserver' ]; then
   echo "Starting webserver"
   python "${AIRFLOW_HOME}"/setup_auth.py
-  exec gosu "${USER}" airflow webserver
+  exec gosu "${USER}" airflow webserver -p "${WEBSERVER_PORT:-8080}"
 else
   exec gosu "${USER}" "$@"
 fi
