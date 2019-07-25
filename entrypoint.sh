@@ -17,15 +17,16 @@ fi
 
 CONN_PARTS_REGEX='postgresql://\([-a-zA-Z0-9_]\+\):\([[:print:]]\+\)@\([-a-zA-Z0-9_\.]\+\):\([0-9]\+\)/\([[:print:]]\+\)'
 
-POSTGRES_USER="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s/${CONN_PARTS_REGEX}/\1/")"
+# Do not use `/` or whatever symbol that exists in the above var
+POSTGRES_USER="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s#${CONN_PARTS_REGEX}#\1#")"
 export POSTGRES_USER
-POSTGRES_PASSWORD="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s/${CONN_PARTS_REGEX}/\2/")"
+POSTGRES_PASSWORD="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s#${CONN_PARTS_REGEX}#\2#")"
 export POSTGRES_PASSWORD
-POSTGRES_HOST="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s/${CONN_PARTS_REGEX}/\3/")"
+POSTGRES_HOST="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s#${CONN_PARTS_REGEX}#\3#")"
 export POSTGRES_HOST
-POSTGRES_PORT="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s/${CONN_PARTS_REGEX}/\4/")"
+POSTGRES_PORT="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s#${CONN_PARTS_REGEX}#\4#")"
 export POSTGRES_PORT
-POSTGRES_DB="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s/${CONN_PARTS_REGEX}/\5/")"
+POSTGRES_DB="$(echo "${AIRFLOW__CORE__SQL_ALCHEMY_CONN}" | sed -e "s#${CONN_PARTS_REGEX}#\5#")"
 export POSTGRES_DB
 
 set +e
