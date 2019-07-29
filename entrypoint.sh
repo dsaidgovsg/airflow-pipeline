@@ -54,7 +54,7 @@ gosu "${USER}" airflow initdb # https://groups.google.com/forum/#!topic/airbnb_a
 
 if [ "$1" = 'afp-scheduler' ]; then
   (while :; do echo 'Serving logs'; gosu "${USER}" airflow serve_logs; sleep 1; done) &
-  (while :; do echo 'Starting scheduler'; gosu "${USER}" airflow scheduler -n "${SCHEDULER_RUNS}"; sleep 1; done)
+  (while :; do echo 'Starting scheduler'; gosu "${USER}" airflow scheduler -n "${SCHEDULER_RUNS:-5}"; sleep 1; done)
 elif [ "$1" = 'afp-webserver' ]; then
   echo "Starting webserver"
   python "${AIRFLOW_HOME}"/setup_auth.py

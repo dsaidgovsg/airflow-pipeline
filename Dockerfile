@@ -4,19 +4,51 @@ ARG HADOOP_VERSION=
 
 FROM guangie88/spark-custom-addons:${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_hive_pyspark_debian
 
-ARG SQLALCHEMY_VERSION=
-ARG SPARK_PY4J=
+# Build matrix configurable values
+ARG SQLALCHEMY_VERSION
+ENV SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}
 
+ARG AIRFLOW_VERSION
+ENV AIRFLOW_VERSION=${AIRFLOW_VERSION}
+
+# Values that are better left with defaults
+
+## Default user and group for running Airflow
+ARG USER=afpuser
+ENV USER=${USER}
+ARG GROUP=hadoop
+ENV GROUP=${GROUP}
+
+## Airflow uses Postgres as its database, example env vars below
+ARG POSTGRES_HOST=localhost
+ENV POSTGRES_HOST=${POSTGRES_HOST}
+
+ARG POSTGRES_PORT=5999
+ENV POSTGRES_PORT=${POSTGRES_PORT}
+
+ARG POSTGRES_USER=fixme
+ENV POSTGRES_USER=${POSTGRES_USER}
+
+ARG POSTGRES_PASSWORD=fixme
+ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+ARG POSTGRES_DB=airflow
+ENV POSTGRES_DB=${POSTGRES_DB}
+
+## Other Spark / Airflow related defaults
 ARG HADOOP_HOME="/opt/hadoop"
 ENV HADOOP_HOME ${HADOOP_HOME}
 
 ARG HADOOP_CONF_DIR="/opt/hadoop/etc/hadoop"
 ENV HADOOP_CONF_DIR ${HADOOP_CONF_DIR}
 
-ARG AIRFLOW_VERSION
-ENV AIRFLOW_VERSION=${AIRFLOW_VERSION}
+ARG SPARK_PY4J
 
-ENV PYTHONPATH=${SPARK_HOME}/${SPARK_PY4J}:${SPARK_HOME}/python
+ARG AIRFLOW_HOME=/airflow
+ENV AIRFLOW_HOME=${AIRFLOW_HOME}
+ENV AIRFLOW_DAG=${AIRFLOW_HOME}/dags
+
+ENV PYTHONPATH=${SPARK_HOME}/${SPARK_PY4J}:${SPARK_HOME}/python:${AIRFLOW_HOME}/config
 ENV PYSPARK_SUBMIT_ARGS="--py-files ${SPARK_HOME}/python/lib/pyspark.zip pyspark-shell"
 
 # Setup airflow
@@ -88,13 +120,9 @@ RUN set -euo pipefail && \
 
 ENV PATH ${PATH}:${HADOOP_HOME}/bin
 
-ARG AIRFLOW_HOME=/airflow
-ENV AIRFLOW_HOME=${AIRFLOW_HOME}
 WORKDIR ${AIRFLOW_HOME}
 
 # Setup airflow dags path
-ENV AIRFLOW_DAG=${AIRFLOW_HOME}/dags
-
 RUN mkdir -p ${AIRFLOW_DAG}
 
 COPY setup_auth.py ${AIRFLOW_HOME}/setup_auth.py
@@ -103,31 +131,7 @@ COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 COPY unittests.cfg ${AIRFLOW_HOME}/unittests.cfg
 
 # Create default user and group
-ARG USER=afpuser
-ENV USER=${USER}
-ARG GROUP=hadoop
-ENV GROUP=${GROUP}
 RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
-
-# Number of times the Airflow scheduler will run before it terminates (and restarts)
-ARG SCHEDULER_RUNS=5
-ENV SCHEDULER_RUNS=${SCHEDULER_RUNS}
-
-# Airflow uses postgres as its database, following are the examples env vars
-ARG POSTGRES_HOST=localhost
-ENV POSTGRES_HOST=${POSTGRES_HOST}
-
-ARG POSTGRES_PORT=5999
-ENV POSTGRES_PORT=${POSTGRES_PORT}
-
-ARG POSTGRES_USER=fixme
-ENV POSTGRES_USER=${POSTGRES_USER}
-
-ARG POSTGRES_PASSWORD=fixme
-ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-
-ARG POSTGRES_DB=airflow
-ENV POSTGRES_DB=${POSTGRES_DB}
 
 # Setup pipeline dependencies
 COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
