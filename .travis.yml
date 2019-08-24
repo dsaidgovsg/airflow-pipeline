@@ -12,68 +12,63 @@ matrix:
     - SPARK_VERSION=2.4.0
     - HADOOP_VERSION=3.1.0
     - SQLALCHEMY_VERSION=1.0
-    - DIST=debian
   - services: docker
     env:
     - AIRFLOW_VERSION=1.9
     - SPARK_VERSION=2.4.0
     - HADOOP_VERSION=3.1.0
     - SQLALCHEMY_VERSION=1.1
-    - DIST=debian
   - services: docker
     env:
     - AIRFLOW_VERSION=1.9
     - SPARK_VERSION=2.4.0
     - HADOOP_VERSION=3.1.0
     - SQLALCHEMY_VERSION=1.2
-    - DIST=debian
   - services: docker
     env:
     - AIRFLOW_VERSION=1.9
     - SPARK_VERSION=2.4.0
     - HADOOP_VERSION=3.1.0
     - SQLALCHEMY_VERSION=1.3
-    - DIST=debian
   - services: docker
     env:
     - AIRFLOW_VERSION=1.10
     - SPARK_VERSION=2.4.0
     - HADOOP_VERSION=3.1.0
     - SQLALCHEMY_VERSION=1.0
-    - DIST=debian
   - services: docker
     env:
     - AIRFLOW_VERSION=1.10
     - SPARK_VERSION=2.4.0
     - HADOOP_VERSION=3.1.0
     - SQLALCHEMY_VERSION=1.1
-    - DIST=debian
   - services: docker
     env:
     - AIRFLOW_VERSION=1.10
     - SPARK_VERSION=2.4.0
     - HADOOP_VERSION=3.1.0
     - SQLALCHEMY_VERSION=1.2
-    - DIST=debian
   - services: docker
     env:
     - AIRFLOW_VERSION=1.10
     - SPARK_VERSION=2.4.0
     - HADOOP_VERSION=3.1.0
     - SQLALCHEMY_VERSION=1.3
-    - DIST=debian
 
 script:
-- IMAGE_TAG="${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}_${DIST}"
 - PY4J_FILE=$(curl -s https://github.com/apache/spark/tree/v${SPARK_VERSION}/python/lib | grep -oE 'py4j-[^\s]+-src\.zip' | uniq)
 - echo "PY4J_FILE - ${PY4J_FILE}"
 - |-
-  docker build . -t "${IMAGE_NAME}:${IMAGE_TAG}" \
-    --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
-    --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
-    --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
-    --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
-    --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}"
+  for SELECTED_PYTHON_MAJOR_VERSION in "2" "3"; do
+    IMAGE_TAG="${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}_py-${SELECTED_PYTHON_MAJOR_VERSION}"
+    docker build . -t "${IMAGE_NAME}:${IMAGE_TAG}" \
+      --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
+      --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
+      --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
+      --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
+      --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}" \
+      --build-arg "SELECTED_PYTHON_MAJOR_VERSION=${SELECTED_PYTHON_MAJOR_VERSION}"
+  done
 
 deploy:
   provider: script

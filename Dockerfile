@@ -2,7 +2,7 @@ ARG AIRFLOW_VERSION=
 ARG SPARK_VERSION=
 ARG HADOOP_VERSION=
 
-FROM guangie88/spark-custom-addons:${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_hive_pyspark_debian
+FROM guangie88/spark-custom-addons:${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_hive_pyspark_debian AS base
 
 # Build matrix configurable values
 ARG SQLALCHEMY_VERSION
@@ -154,4 +154,26 @@ RUN set -euo pipefail && \
         unzip \
         ; \
     rm -rf /var/lib/apt/lists/*; \
+    # Default to Python 2.7
+    PYTHON2_MAJOR_MINOR_VERSION="$(python2 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
+    update-alternatives --install /usr/bin/python python "/usr/bin/python${PYTHON2_MAJOR_MINOR_VERSION}" 2; \
+    PYTHON3_MAJOR_MINOR_VERSION="$(python3 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
+    update-alternatives --install /usr/bin/python python "/usr/bin/python${PYTHON3_MAJOR_MINOR_VERSION}" 1; \
+    :
+
+FROM base
+ARG SELECTED_PYTHON_MAJOR_VERSION=2
+
+# Airflow script only uses /usr/bin/python, so need to set this symbolic link properly to switch the version
+RUN set -euo pipefail && \
+    if [ "${SELECTED_PYTHON_MAJOR_VERSION}" = "2" ]; then \
+        PYTHON2_MAJOR_MINOR_VERSION="$(python2 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
+        update-alternatives --set python "/usr/bin/python${PYTHON2_MAJOR_MINOR_VERSION}"; \
+    elif [ "${SELECTED_PYTHON_MAJOR_VERSION}" = "3" ]; then \
+        PYTHON3_MAJOR_MINOR_VERSION="$(python3 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
+        update-alternatives --set python "/usr/bin/python${PYTHON3_MAJOR_MINOR_VERSION}"; \
+    else \
+        >&2 echo "SELECTED_PYTHON_MAJOR_VERSION must be either 2 or 3 only"; \
+        return 1; \
+    fi; \
     :
