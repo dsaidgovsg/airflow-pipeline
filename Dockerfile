@@ -11,6 +11,9 @@ ENV SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}
 ARG AIRFLOW_VERSION
 ENV AIRFLOW_VERSION=${AIRFLOW_VERSION}
 
+# Default to Python 2.7
+ARG SELECTED_PYTHON_MAJOR_VERSION=2
+
 # Values that are better left with defaults
 
 ## Default user and group for running Airflow
@@ -51,15 +54,36 @@ ENV AIRFLOW_DAG=${AIRFLOW_HOME}/dags
 ENV PYTHONPATH=${SPARK_HOME}/${SPARK_PY4J}:${SPARK_HOME}/python:${AIRFLOW_HOME}/config
 ENV PYSPARK_SUBMIT_ARGS="--py-files ${SPARK_HOME}/python/lib/pyspark.zip pyspark-shell"
 
+# Select default Python version first
+# Airflow script only uses /usr/bin/python, so need to set this symbolic link properly to switch the version
+RUN set -euo pipefail && \
+    unlink /usr/bin/python; \
+    if [ "${SELECTED_PYTHON_MAJOR_VERSION}" = "2" ]; then \
+        PYTHON2_MAJOR_MINOR_VERSION="$(python2 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
+        ln -s "/usr/bin/python${PYTHON2_MAJOR_MINOR_VERSION}" /usr/bin/python; \
+    elif [ "${SELECTED_PYTHON_MAJOR_VERSION}" = "3" ]; then \
+        PYTHON3_MAJOR_MINOR_VERSION="$(python3 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
+        ln -s "/usr/bin/python${PYTHON3_MAJOR_MINOR_VERSION}" /usr/bin/python; \
+    else \
+        >&2 echo "SELECTED_PYTHON_MAJOR_VERSION must be either 2 or 3 only"; \
+        return 1; \
+    fi; \
+    :
+
 # Setup airflow
 RUN set -euo pipefail && \
+    # Set up Python packages variables
+    if [ "${SELECTED_PYTHON_MAJOR_VERSION}" = "2" ]; then PY_PKG_SUFFIX=""; else PY_PKG_SUFFIX="3"; fi; \
+    PYTHON_PIP_PKG="python${PY_PKG_SUFFIX}-pip"; \
+    PYTHON_SETUPTOOLS_PKG="python${PY_PKG_SUFFIX}-setuptools"; \
+    PYTHON_DEV_PKG="python${PY_PKG_SUFFIX}-dev"; \
     # Apt
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
         # For setup purposes only
         curl \
-        python-pip \
-        python-setuptools \
+        "${PYTHON_PIP_PKG}" \
+        "${PYTHON_SETUPTOOLS_PKG}" \
         unzip \
         # Intended packages
         build-essential \
@@ -70,12 +94,18 @@ RUN set -euo pipefail && \
         libkrb5-dev \
         libpq-dev \
         libsasl2-dev \
-        python-dev \
+        "${PYTHON_DEV_PKG}" \
         vim-tiny \
         ; \
     rm -rf /var/lib/apt/lists/*; \
     # Update pip
     python -m pip install --upgrade pip; \
+    # Airflow and SQLAlchemy
+    ## These two version numbers can take MAJ.MIN[.PAT]
+    AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
+    python -m pip install --no-cache-dir "apache-airflow[all]==${AIRFLOW_NORM_VERSION}" psycopg2; \
+    SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
+    python -m pip install --no-cache-dir "sqlalchemy==${SQLALCHEMY_NORM_VERSION}"; \
     # Hadoop external installation
     mkdir -p $(dirname "${HADOOP_HOME}"); \
     curl -LO https://archive.apache.org/dist/hadoop/core/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz; \
@@ -110,12 +140,14 @@ RUN set -euo pipefail && \
     cd ${HADOOP_HOME}/share/hadoop/tools/lib; \
     curl -sLO https://downloads.mariadb.com/Connectors/java/connector-java-2.4.0/mariadb-java-client-2.4.0.jar; \
     cd -; \
-    # Airflow
-    ## These two version numbers can take MAJ.MIN[.PAT]
-    AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
-    python -m pip install --no-cache-dir "apache-airflow[all]==${AIRFLOW_NORM_VERSION}" psycopg2; \
-    SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
-    python -m pip install --no-cache-dir "sqlalchemy==${SQLALCHEMY_NORM_VERSION}"; \
+    # Remove unused apt packages
+    DEBIAN_FRONTEND=noninteractive apt-get remove --no-install-recommends -y \
+        curl \
+        "${PYTHON_PIP_PKG}" \
+        "${PYTHON_SETUPTOOLS_PKG}" \
+        unzip \
+        ; \
+    rm -rf /var/lib/apt/lists/*; \
     :
 
 ENV PATH ${PATH}:${HADOOP_HOME}/bin
@@ -133,10 +165,6 @@ COPY unittests.cfg ${AIRFLOW_HOME}/unittests.cfg
 # Create default user and group
 RUN groupadd -r "${GROUP}" && useradd -rmg "${GROUP}" "${USER}"
 
-# Setup pipeline dependencies
-COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
-RUN pip install -r "${AIRFLOW_HOME}/requirements.txt"
-
 # Less verbose logging
 COPY log4j.properties ${SPARK_HOME}/conf/log4j.properties
 
@@ -145,35 +173,3 @@ COPY ./config/ ${AIRFLOW_HOME}/config/
 
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-
-RUN set -euo pipefail && \
-    DEBIAN_FRONTEND=noninteractive apt-get remove --no-install-recommends -y \
-        curl \
-        python-pip \
-        python-setuptools \
-        unzip \
-        ; \
-    rm -rf /var/lib/apt/lists/*; \
-    # Default to Python 2.7
-    PYTHON2_MAJOR_MINOR_VERSION="$(python2 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
-    update-alternatives --install /usr/bin/python python "/usr/bin/python${PYTHON2_MAJOR_MINOR_VERSION}" 2; \
-    PYTHON3_MAJOR_MINOR_VERSION="$(python3 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
-    update-alternatives --install /usr/bin/python python "/usr/bin/python${PYTHON3_MAJOR_MINOR_VERSION}" 1; \
-    :
-
-FROM base
-ARG SELECTED_PYTHON_MAJOR_VERSION=2
-
-# Airflow script only uses /usr/bin/python, so need to set this symbolic link properly to switch the version
-RUN set -euo pipefail && \
-    if [ "${SELECTED_PYTHON_MAJOR_VERSION}" = "2" ]; then \
-        PYTHON2_MAJOR_MINOR_VERSION="$(python2 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
-        update-alternatives --set python "/usr/bin/python${PYTHON2_MAJOR_MINOR_VERSION}"; \
-    elif [ "${SELECTED_PYTHON_MAJOR_VERSION}" = "3" ]; then \
-        PYTHON3_MAJOR_MINOR_VERSION="$(python3 --version 2>&1 | cut -d ' ' -f2 | cut -d '.' -f1,2)"; \
-        update-alternatives --set python "/usr/bin/python${PYTHON3_MAJOR_MINOR_VERSION}"; \
-    else \
-        >&2 echo "SELECTED_PYTHON_MAJOR_VERSION must be either 2 or 3 only"; \
-        return 1; \
-    fi; \
-    :
