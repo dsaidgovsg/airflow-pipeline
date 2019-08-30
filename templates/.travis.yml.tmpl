@@ -2,33 +2,46 @@ language: bash
 
 env:
   global:
-  - IMAGE_NAME=guangie88/airflow-pipeline
+  - IMAGE_NAME=airflow-pipeline
 
 matrix:
   include:
 {%- for v in versions %}
+{%- for airflow in v.airflow %}
+{%- for spark in v.spark %}
+{%- for hadoop in v.hadoop %}
+{%- for python in v.python %}
+{%- set python_vers = python | split(pat=".") %}
+{%- set python_maj = python_vers[0] %}
+{%- for sqlalchemy in v.sqlalchemy %}
   - services: docker
     env:
-    - AIRFLOW_VERSION={{ v.airflow }}
-    - SPARK_VERSION={{ v.spark }}
-    - HADOOP_VERSION={{ v.hadoop }}
-    - SQLALCHEMY_VERSION={{ v.sqlalchemy }}
+    - AIRFLOW_VERSION={{ airflow }}
+    - SPARK_VERSION={{ spark }}
+    - HADOOP_VERSION={{ hadoop }}
+    - PYTHON_VERSION={{ python }}
+    - SQLALCHEMY_VERSION={{ sqlalchemy }}
+    - AIRFLOW_SUBPACKAGES="{{ airflow_subpackages[python_maj] | join(sep=",") }}"
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
 {%- endfor %}
 
 script:
 - PY4J_FILE=$(curl -s https://github.com/apache/spark/tree/v${SPARK_VERSION}/python/lib | grep -oE 'py4j-[^\s]+-src\.zip' | uniq)
 - echo "PY4J_FILE - ${PY4J_FILE}"
+- TAG_NAME="${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_python-${PYTHON_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}"
 - |-
-  for SELECTED_PYTHON_MAJOR_VERSION in "2" "3"; do
-    IMAGE_TAG="${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}_py-${SELECTED_PYTHON_MAJOR_VERSION}"
-    docker build . -t "${IMAGE_NAME}:${IMAGE_TAG}" \
-      --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
-      --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
-      --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
-      --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
-      --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}" \
-      --build-arg "SELECTED_PYTHON_MAJOR_VERSION=${SELECTED_PYTHON_MAJOR_VERSION}"
-  done
+  docker build . -t "${DOCKER_USERNAME}/${IMAGE_NAME}:${TAG_NAME}" \
+    --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
+    --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
+    --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
+    --build-arg "PYTHON_VERSION=${PYTHON_VERSION}" \
+    --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
+    --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}" \
+    --build-arg "AIRFLOW_SUBPACKAGES=${AIRFLOW_SUBPACKAGES}"
 
 deploy:
   provider: script

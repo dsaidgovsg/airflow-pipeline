@@ -1,12 +1,63 @@
 version: '2'
 services:
+  postgres:
+    image: postgres:9.6
+    ports:
+      - 127.0.0.1:5999:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: fixme
+      POSTGRES_PASSWORD: fixme
+      POSTGRES_DB: airflow
+      TZ: "Asia/Singapore"
+    restart: always
   scheduler:
+    depends_on:
+      - postgres
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        AIRFLOW_VERSION: "1.10.4"
+        SPARK_VERSION: "2.4.3"
+        HADOOP_VERSION: "3.1.0"
+        PYTHON_VERSION: "3.5"
+        SQLALCHEMY_VERSION: "1.3"
+        SPARK_PY4J: "python/lib/py4j-0.10.7-src.zip"
+        AIRFLOW_SUBPACKAGES: ""
+    network_mode: "host"
     volumes:
       - ./dags:/airflow/dags
+      - airflow_logs:/airflow/logs
     environment:
       AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@localhost:5999/airflow
+      TZ: "Asia/Singapore"
+    restart: always
   webserver:
-    volumes:
-      - ./dags:/airflow/dags
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        AIRFLOW_VERSION: "1.10.4"
+        SPARK_VERSION: "2.4.3"
+        HADOOP_VERSION: "3.1.0"
+        PYTHON_VERSION: "3.5"
+        SQLALCHEMY_VERSION: "1.3"
+        SPARK_PY4J: "python/lib/py4j-0.10.7-src.zip"
+        AIRFLOW_SUBPACKAGES: ""
+    network_mode: "host"
+    volumes_from:
+      - scheduler
     environment:
       AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@localhost:5999/airflow
+      AIRFLOW_USER: fixme
+      AIRFLOW_EMAIL: fixme@fix.me
+      AIRFLOW_PASSWORD: fixme
+      TZ: "Asia/Singapore"
+    restart: always
+volumes:
+  postgres: {}
+  airflow_logs: {}

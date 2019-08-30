@@ -2,73 +2,168 @@ language: bash
 
 env:
   global:
-  - IMAGE_NAME=guangie88/airflow-pipeline
+  - IMAGE_NAME=airflow-pipeline
 
 matrix:
   include:
   - services: docker
     env:
-    - AIRFLOW_VERSION=1.9
-    - SPARK_VERSION=2.4.0
+    - AIRFLOW_VERSION=1.9.0
+    - SPARK_VERSION=2.4.3
     - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=2.7
     - SQLALCHEMY_VERSION=1.0
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kerberos,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
   - services: docker
     env:
-    - AIRFLOW_VERSION=1.9
-    - SPARK_VERSION=2.4.0
+    - AIRFLOW_VERSION=1.9.0
+    - SPARK_VERSION=2.4.3
     - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=2.7
     - SQLALCHEMY_VERSION=1.1
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kerberos,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
   - services: docker
     env:
-    - AIRFLOW_VERSION=1.9
-    - SPARK_VERSION=2.4.0
+    - AIRFLOW_VERSION=1.9.0
+    - SPARK_VERSION=2.4.3
     - HADOOP_VERSION=3.1.0
-    - SQLALCHEMY_VERSION=1.2
-  - services: docker
-    env:
-    - AIRFLOW_VERSION=1.9
-    - SPARK_VERSION=2.4.0
-    - HADOOP_VERSION=3.1.0
-    - SQLALCHEMY_VERSION=1.3
-  - services: docker
-    env:
-    - AIRFLOW_VERSION=1.10
-    - SPARK_VERSION=2.4.0
-    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=3.5
     - SQLALCHEMY_VERSION=1.0
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
   - services: docker
     env:
-    - AIRFLOW_VERSION=1.10
-    - SPARK_VERSION=2.4.0
+    - AIRFLOW_VERSION=1.9.0
+    - SPARK_VERSION=2.4.3
     - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=3.5
     - SQLALCHEMY_VERSION=1.1
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
   - services: docker
     env:
-    - AIRFLOW_VERSION=1.10
-    - SPARK_VERSION=2.4.0
+    - AIRFLOW_VERSION=1.10.0
+    - SPARK_VERSION=2.4.3
     - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=2.7
+    - SQLALCHEMY_VERSION=1.1
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kerberos,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.0
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=3.5
+    - SQLALCHEMY_VERSION=1.1
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.1
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=2.7
+    - SQLALCHEMY_VERSION=1.1
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kerberos,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.1
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=3.5
+    - SQLALCHEMY_VERSION=1.1
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.2
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=2.7
+    - SQLALCHEMY_VERSION=1.1
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kerberos,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.2
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=2.7
     - SQLALCHEMY_VERSION=1.2
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kerberos,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
   - services: docker
     env:
-    - AIRFLOW_VERSION=1.10
-    - SPARK_VERSION=2.4.0
+    - AIRFLOW_VERSION=1.10.2
+    - SPARK_VERSION=2.4.3
     - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=3.5
+    - SQLALCHEMY_VERSION=1.1
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.2
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=3.5
+    - SQLALCHEMY_VERSION=1.2
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.3
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=2.7
+    - SQLALCHEMY_VERSION=1.1
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kerberos,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.3
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=2.7
+    - SQLALCHEMY_VERSION=1.2
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kerberos,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.3
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=3.5
+    - SQLALCHEMY_VERSION=1.1
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.3
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=3.5
+    - SQLALCHEMY_VERSION=1.2
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.4
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=2.7
     - SQLALCHEMY_VERSION=1.3
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kerberos,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
+  - services: docker
+    env:
+    - AIRFLOW_VERSION=1.10.4
+    - SPARK_VERSION=2.4.3
+    - HADOOP_VERSION=3.1.0
+    - PYTHON_VERSION=3.5
+    - SQLALCHEMY_VERSION=1.3
+    - AIRFLOW_SUBPACKAGES="async,celery,cloudant,crypto,devel,devel_hadoop,druid,gcp,github_enterprise,google_auth,hdfs,hive,jdbc,kubernetes,ldap,mssql,mysql,oracle,password,postgres,qds,rabbitmq,redis,s3,samba,slack,ssh,vertica"
 
 script:
 - PY4J_FILE=$(curl -s https://github.com/apache/spark/tree/v${SPARK_VERSION}/python/lib | grep -oE 'py4j-[^\s]+-src\.zip' | uniq)
 - echo "PY4J_FILE - ${PY4J_FILE}"
+- TAG_NAME="${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_python-${PYTHON_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}"
 - |-
-  for SELECTED_PYTHON_MAJOR_VERSION in "2" "3"; do
-    IMAGE_TAG="${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}_py-${SELECTED_PYTHON_MAJOR_VERSION}"
-    docker build . -t "${IMAGE_NAME}:${IMAGE_TAG}" \
-      --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
-      --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
-      --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
-      --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
-      --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}" \
-      --build-arg "SELECTED_PYTHON_MAJOR_VERSION=${SELECTED_PYTHON_MAJOR_VERSION}"
-  done
+  docker build . -t "${DOCKER_USERNAME}/${IMAGE_NAME}:${TAG_NAME}" \
+    --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
+    --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
+    --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
+    --build-arg "PYTHON_VERSION=${PYTHON_VERSION}" \
+    --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
+    --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}" \
+    --build-arg "AIRFLOW_SUBPACKAGES=${AIRFLOW_SUBPACKAGES}"
 
 deploy:
   provider: script
