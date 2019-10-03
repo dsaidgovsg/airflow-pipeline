@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+# https://github.com/conda/conda/issues/7980
+source "${CONDA_HOME}/etc/profile.d/conda.sh"
+conda activate airflow
+
 SPARK_DIST_CLASSPATH="$(hadoop classpath)"
 export SPARK_DIST_CLASSPATH
 
@@ -34,7 +38,7 @@ set +e
 # Strategy from http://superuser.com/a/806331/98716
 DATABASE_DEV="/dev/tcp/${POSTGRES_HOST}/${POSTGRES_PORT}"
 echo "Checking database connection ${DATABASE_DEV}"
-timeout ${POSTGRES_TIMEOUT} bash <<EOT
+timeout -t ${POSTGRES_TIMEOUT} bash <<EOT
 while ! (echo > "${DATABASE_DEV}") >/dev/null 2>&1; do
     echo "Waiting for database ${DATABASE_DEV}"
     sleep 2;

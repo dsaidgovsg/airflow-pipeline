@@ -19,11 +19,11 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        AIRFLOW_VERSION: "1.10.4"
-        SPARK_VERSION: "2.4.3"
+        AIRFLOW_VERSION: "1.9"
+        SPARK_VERSION: "2.4.4"
         HADOOP_VERSION: "3.1.0"
-        PYTHON_VERSION: "3.5"
-        SQLALCHEMY_VERSION: "1.3"
+        PYTHON_VERSION: "3.6"
+        SQLALCHEMY_VERSION: "1.1"
         SPARK_PY4J: "python/lib/py4j-0.10.7-src.zip"
         AIRFLOW_SUBPACKAGES: ""
     network_mode: "host"
@@ -40,11 +40,11 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        AIRFLOW_VERSION: "1.10.4"
-        SPARK_VERSION: "2.4.3"
+        AIRFLOW_VERSION: "1.9"
+        SPARK_VERSION: "2.4.4"
         HADOOP_VERSION: "3.1.0"
-        PYTHON_VERSION: "3.5"
-        SQLALCHEMY_VERSION: "1.3"
+        PYTHON_VERSION: "3.6"
+        SQLALCHEMY_VERSION: "1.1"
         SPARK_PY4J: "python/lib/py4j-0.10.7-src.zip"
         AIRFLOW_SUBPACKAGES: ""
     network_mode: "host"
