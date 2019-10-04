@@ -5,9 +5,22 @@ set -euo pipefail
 source "${CONDA_HOME}/etc/profile.d/conda.sh"
 conda activate airflow
 
+# To include Hadoop JAR classes for Spark usage
 SPARK_DIST_CLASSPATH="$(hadoop classpath)"
 export SPARK_DIST_CLASSPATH
 
+# This "early returns" so that it gives the conda activation with bash-like
+# effect and all the Airflow stuff below
+if [ "$#" -eq 0 ]; then
+  exec bash
+elif [ "$1" = "gosu-run" ]; then
+  shift
+  exec gosu "${USER}" "$@"
+elif [ "$1" != "afp-scheduler" ] && [ "$1" != "afp-webserver" ]; then
+  exec "$@"
+fi
+
+# For Airflow scheduler and webserver usage
 POSTGRES_TIMEOUT=60
 
 getent group "${GROUP}" || groupadd -r "${GROUP}"
@@ -54,12 +67,13 @@ else
 fi
 set -e
 
-gosu "${USER}" airflow initdb # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
+# https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
+gosu "${USER}" airflow initdb 
 
-if [ "$1" = 'afp-scheduler' ]; then
-  (while :; do echo 'Serving logs'; gosu "${USER}" airflow serve_logs; sleep 1; done) &
-  (while :; do echo 'Starting scheduler'; gosu "${USER}" airflow scheduler -n "${SCHEDULER_RUNS:-5}"; sleep 1; done)
-elif [ "$1" = 'afp-webserver' ]; then
+if [ "$1" = "afp-scheduler" ]; then
+  (while :; do echo "Serving logs"; gosu "${USER}" airflow serve_logs; sleep 1; done) &
+  (while :; do echo "Starting scheduler"; gosu "${USER}" airflow scheduler -n "${SCHEDULER_RUNS:-5}"; sleep 1; done)
+elif [ "$1" = "afp-webserver" ]; then
   echo "Starting webserver"
   python "${AIRFLOW_HOME}"/setup_auth.py
 
@@ -68,6 +82,4 @@ elif [ "$1" = 'afp-webserver' ]; then
   else
     exec gosu "${USER}" airflow webserver
   fi
-else
-  exec gosu "${USER}" "$@"
 fi

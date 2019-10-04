@@ -2,18 +2,56 @@
 
 [![Build Status](https://travis-ci.org/guangie88/airflow-pipeline.svg?branch=master)](https://travis-ci.org/guangie88/airflow-pipeline)
 
-This is a fork of <https://github.com/dsaidgovsg/airflow-pipeline>.
-
-This repo is a set-up to build Docker images of
-[Airflow](https://airflow.incubator.apache.org/), and has been heavily modified
-from the original to generate different version combinations of the following
-parts:
+This repo is a Travis build matrix set-up to generate Docker images of
+[Airflow](https://airflow.incubator.apache.org/), and other major applications
+as below:
 
 - Airflow
 - Spark
 - Hadoop integration with Spark
 - Python
 - SQL Alchemy
+
+Note that this repo is actually a fork of
+<https://github.com/dsaidgovsg/airflow-pipeline>, but has been heavily revamped
+in order to do build matrix to generate Docker images with varying application
+versions.
+
+Additionally, Conda and specialized environment are being used to perform all
+Python related installations, so that it is easy to generate images with
+specific Python versions without conflicting dependency package versions.
+
+The entrypoint of this repository is heavily specialized to give the following
+effects:
+
+- (Airflow) If the first command/arg is `afp-scheduler` or `afp-webserver`, the
+  entrypoint will run Airflow service, and you may need to provide additional
+  environment variables to run the service properly.
+
+  It is recommended that you run `docker-compose up --build` instead to run the
+  orchestration of services that involve both the above services.
+
+- (Bash-like)
+    1. If no command/arg is passed in, it will just run a `bash` interactive
+       shell as `root` user.
+
+       E.g. `docker run --rm -it airflow-pipeline` -> (bash interactive)
+
+    2. If the first command/arg is `gosu-run`, it will run the **remaining**
+       arguments like this: `gosu ${USER} $@`, where `$@` are the rest of the
+       arguments.
+
+       E.g. `docker run --rm -it airflow-pipeline gosu-run whoami` -> `afpuser`
+
+    3. If the first command/arg is neither `afp-scheduler` nor `afp-webserver`,
+       it will simply run the command and arguments as it is as `root` user,
+       with no presumption of running under `bash`.
+
+       E.g. `docker run --rm -it airflow-pipeline whoami` -> `root`
+       E.g. `docker run --rm -it airflow-pipeline echo Hello` -> `Hello`
+
+Note that the specialized Conda environment is activated in all Bash-like
+scenarios, regardless of whether `gosu` was used to run as a different user.
 
 ## How to build
 
@@ -23,21 +61,21 @@ SPARK_VERSION=2.4.4
 HADOOP_VERSION=3.1.0
 PYTHON_VERSION=3.6
 SQLALCHEMY_VERSION=1.1
-PY4J_FILE="$(curl -s https://github.com/apache/spark/tree/v${SPARK_VERSION}/python/lib | grep -oE 'py4j-[^\s]+-src\.zip' | uniq)"
-docker build . -t airflow-pipeline \
-  --build-arg AIRFLOW_VERSION=${AIRFLOW_VERSION} \
-  --build-arg SPARK_VERSION=${SPARK_VERSION} \
-  --build-arg HADOOP_VERSION=${HADOOP_VERSION} \
-  --build-arg PYTHON_VERSION=${PYTHON_VERSION} \
-  --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}" \
-  --build-arg SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}
+docker build -t airflow-pipeline \
+  --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
+  --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
+  --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
+  --build-arg "PYTHON_VERSION=${PYTHON_VERSION}" \
+  --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
+  .
 ```
 
 You may refer to the [vars.yml](templates/vars.yml) to have a sensing of all the
 possible build arguments to combine.
 
-`SPARK_PY4J` can only be properly derived by running the above `PY4J_FILE`
-command to locate it.
+## Entrypoint
+
+
 
 ## Additional Useful Perks
 
