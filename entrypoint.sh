@@ -1,16 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
-# https://github.com/conda/conda/issues/7980
-source "${CONDA_HOME}/etc/profile.d/conda.sh"
-conda activate airflow
-
 # To include Hadoop JAR classes for Spark usage
 SPARK_DIST_CLASSPATH="$(hadoop classpath)"
 export SPARK_DIST_CLASSPATH
 
-# This "early returns" so that it gives the conda activation with bash-like
-# effect and all the Airflow stuff below
+# This "early returns" so that it gives bash-like effect when we don't want to
+# do Airflow related operations
 if [ "$#" -eq 0 ]; then
   exec bash
 elif [ "$1" = "gosu-run" ]; then

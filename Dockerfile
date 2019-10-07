@@ -87,9 +87,8 @@ RUN set -euo pipefail && \
     ## These two version numbers can take MAJ.MIN[.PAT]
     AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
-    conda config --add channels conda-forge; \
-    conda create -y -n airflow "python=${PYTHON_VERSION}" "airflow=${AIRFLOW_NORM_VERSION}" "airflow-with-s3=${AIRFLOW_NORM_VERSION}" "sqlalchemy=${SQLALCHEMY_NORM_VERSION}" psycopg2 flask-bcrypt; \
-    echo "conda activate airflow" >> "${HOME}/.bashrc"; \
+    conda install -y "python=${PYTHON_VERSION}" "airflow=${AIRFLOW_NORM_VERSION}" "airflow-with-s3=${AIRFLOW_NORM_VERSION}" "sqlalchemy=${SQLALCHEMY_NORM_VERSION}" psycopg2 flask-bcrypt; \
+    conda clean -a -y; \
     :
 
 ARG AIRFLOW_HOME=/airflow
