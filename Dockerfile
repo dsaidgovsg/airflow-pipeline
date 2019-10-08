@@ -80,6 +80,10 @@ ENV USER="${USER}"
 ARG GROUP=hadoop
 ENV GROUP="${GROUP}"
 
+ARG BOTO3_VERSION="1.9"
+ARG PSYCOPG2_VERSION="2.8"
+ARG FLASK_BCRYPT_VERSION="0.7"
+
 RUN set -euo pipefail && \
     # Set up 
     addgroup "${GROUP}" && adduser -g "" -D -G "${GROUP}" "${USER}"; \
@@ -87,7 +91,18 @@ RUN set -euo pipefail && \
     ## These two version numbers can take MAJ.MIN[.PAT]
     AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
-    conda install -y "python=${PYTHON_VERSION}" "airflow=${AIRFLOW_NORM_VERSION}" "airflow-with-s3=${AIRFLOW_NORM_VERSION}" "sqlalchemy=${SQLALCHEMY_NORM_VERSION}" psycopg2 flask-bcrypt; \
+    BOTO3_NORM_VERSION="$(printf "%s.%s" "${BOTO3_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
+    PSYCOPG2_NORM_VERSION="$(printf "%s.%s" "${PSYCOPG2_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
+    FLASK_BCRYPT_NORM_VERSION="$(printf "%s.%s" "${FLASK_BCRYPT_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
+    conda install -y \
+        "python=${PYTHON_VERSION}" \
+        "airflow=${AIRFLOW_NORM_VERSION}" \
+        "airflow-with-s3=${AIRFLOW_NORM_VERSION}" \
+        "sqlalchemy=${SQLALCHEMY_NORM_VERSION}" \
+        "boto3=${BOTO3_NORM_VERSION}" \
+        "psycopg2=${PSYCOPG2_NORM_VERSION}" \
+        "flask-bcrypt=${FLASK_BCRYPT_NORM_VERSION}" \
+        ; \
     conda clean -a -y; \
     :
 
