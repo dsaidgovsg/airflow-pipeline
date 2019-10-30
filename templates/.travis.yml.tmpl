@@ -27,7 +27,18 @@ matrix:
 {%- endfor %}
 {%- endfor %}
 
+before_install:
+- wget https://github.com/guangie88/tera-cli/releases/download/v0.2.1/tera_linux_amd64 -O tera
+- chmod +x tera
+- sudo mv tera /usr/local/bin/
+
 script:
+# Check applied and template
+- cp .travis.yml .travis.yml.backup
+- ./templates/apply-vars.sh
+- if ! diff .travis.yml .travis.yml.backup; then echo ".travis.yml.tmpl and .travis.yml differs!" && exit 1; fi
+
+# Build image
 - PY4J_FILE=$(curl -s https://github.com/apache/spark/tree/v${SPARK_VERSION}/python/lib | grep -oE 'py4j-[^\s]+-src\.zip' | uniq)
 - echo "PY4J_FILE - ${PY4J_FILE}"
 - TAG_NAME="${SELF_VERSION}_${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_python-${PYTHON_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}"
