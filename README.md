@@ -53,6 +53,37 @@ effects:
 Note that the specialized Conda environment is activated in all Bash-like
 scenarios, regardless of whether `gosu` was used to run as a different user.
 
+## Versioning
+
+Starting from Docker tags that give self-version `v1`, any Docker image usage
+related breaking change will generate a new self-version so that this will
+minimize any impact on the user-facing side trying to use the most updated
+image.
+
+These are considered breaking changes:
+
+- Change of Linux distro, e.g. Alpine <-> Debian. This will automatically lead
+  to a difference in the package management tool used such as `apk` vs `apt`.
+  Note that however this does not include upgrading of Linux distro that may
+  affect the package management, e.g. `alpine:3.9` vs `alpine:3.10`.
+- Removal of advertized installed CLI tools that is not listed within the
+  Docker tag. E.g. Spark and Hadoop are part of the Docker tag, so they are not
+  part of the advertized CLI tools.
+- Removal of advertized environment variables
+- Change of any environment variable value
+
+In the case where a CLI tool is known to perform a major version upgrade, this
+set-up will try to also release a new self-version number. But note that this is
+at a best effort scale only because most of the tools are inherited upstream,
+or simply unable / undesirable to specify the version to install.
+
+## Changelogs
+
+All self-versioned change logs are listed in [`CHANGELOG.md`](CHANGELOG.md).
+
+The advertized CLI tools and env vars are also listed in the detailed change
+logs.
+
 ## How to build
 
 ```bash
@@ -74,8 +105,6 @@ You may refer to the [vars.yml](templates/vars.yml) to have a sensing of all the
 possible build arguments to combine.
 
 ## Entrypoint
-
-
 
 ## Additional Useful Perks
 

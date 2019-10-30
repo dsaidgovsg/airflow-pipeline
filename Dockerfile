@@ -63,7 +63,7 @@ RUN set -euo pipefail && \
         ; \
     :
 
-ENV PATH "${PATH}:${HADOOP_HOME}/bin"
+ENV PATH="${PATH}:${HADOOP_HOME}/bin"
 
 # Conda side of set-up
 ARG AIRFLOW_VERSION

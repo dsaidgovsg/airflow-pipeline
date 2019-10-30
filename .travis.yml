@@ -3,6 +3,7 @@ language: bash
 env:
   global:
   - IMAGE_NAME=airflow-pipeline
+  - SELF_VERSION=v1
 
 matrix:
   include:

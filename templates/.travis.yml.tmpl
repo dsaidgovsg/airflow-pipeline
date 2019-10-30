@@ -3,6 +3,7 @@ language: bash
 env:
   global:
   - IMAGE_NAME=airflow-pipeline
+  - SELF_VERSION={{ self_version }}
 
 matrix:
   include:
@@ -29,7 +30,7 @@ matrix:
 script:
 - PY4J_FILE=$(curl -s https://github.com/apache/spark/tree/v${SPARK_VERSION}/python/lib | grep -oE 'py4j-[^\s]+-src\.zip' | uniq)
 - echo "PY4J_FILE - ${PY4J_FILE}"
-- TAG_NAME="${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_python-${PYTHON_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}"
+- TAG_NAME="${SELF_VERSION}_${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_python-${PYTHON_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}"
 - |-
   docker build . -t "${IMAGE_NAME}:${TAG_NAME}" \
     --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
