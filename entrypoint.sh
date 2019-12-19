@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Set to "false" to disable Airflow initdb at the start
+ENABLE_AIRFLOW_INITDB="${ENABLE_AIRFLOW_INITDB:-true}"
+
 # To include Hadoop JAR classes for Spark usage
 SPARK_DIST_CLASSPATH="$(hadoop classpath)"
 export SPARK_DIST_CLASSPATH
@@ -64,7 +67,9 @@ fi
 set -e
 
 # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
-gosu "${USER}" airflow initdb 
+if [ "${ENABLE_AIRFLOW_INITDB}" = "true" ]; then
+  gosu "${USER}" airflow initdb
+fi
 
 if [ "$1" = "afp-scheduler" ]; then
   (while :; do echo "Serving logs"; gosu "${USER}" airflow serve_logs; sleep 1; done) &

@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: airflow-pipeline
-      SELF_VERSION: "v1"
+      SELF_VERSION: "v2"
       AIRFLOW_VERSION: "${{ matrix.version.airflow }}"
       PYTHON_VERSION: "${{ matrix.version.python }}"
       SQLALCHEMY_VERSION: "${{ matrix.version.sqlalchemy }}"

@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        AIRFLOW_VERSION: "1.9"
+        AIRFLOW_VERSION: "1.10"
         SPARK_VERSION: "2.4.4"
         HADOOP_VERSION: "3.1.0"
         PYTHON_VERSION: "3.6"
@@ -28,7 +28,6 @@ services:
         AIRFLOW_SUBPACKAGES: ""
     network_mode: "host"
     volumes:
-      - ./dags:/airflow/dags
       - airflow_logs:/airflow/logs
     environment:
       AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
@@ -40,7 +39,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        AIRFLOW_VERSION: "1.9"
+        AIRFLOW_VERSION: "1.10"
         SPARK_VERSION: "2.4.4"
         HADOOP_VERSION: "3.1.0"
         PYTHON_VERSION: "3.6"

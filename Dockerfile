@@ -75,12 +75,13 @@ ENV SQLALCHEMY_VERSION="${SQLALCHEMY_VERSION}"
 ARG PYTHON_VERSION=
 
 ## Default user and group for running Airflow
-ARG USER=afpuser
+ARG USER=airflow
 ENV USER="${USER}"
-ARG GROUP=hadoop
+ARG GROUP=airflow
 ENV GROUP="${GROUP}"
 
 ARG BOTO3_VERSION="1.9"
+ARG CRYPTOGRAPHY_VERSION="2.8"
 ARG PSYCOPG2_VERSION="2.8"
 ARG FLASK_BCRYPT_VERSION="0.7"
 
@@ -92,6 +93,7 @@ RUN set -euo pipefail && \
     AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     BOTO3_NORM_VERSION="$(printf "%s.%s" "${BOTO3_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
+    CRYPTOGRAPHY_NORM_VERSION="$(printf "%s.%s" "${CRYPTOGRAPHY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     PSYCOPG2_NORM_VERSION="$(printf "%s.%s" "${PSYCOPG2_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     FLASK_BCRYPT_NORM_VERSION="$(printf "%s.%s" "${FLASK_BCRYPT_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     conda install -y \
@@ -100,6 +102,7 @@ RUN set -euo pipefail && \
         "airflow-with-s3=${AIRFLOW_NORM_VERSION}" \
         "sqlalchemy=${SQLALCHEMY_NORM_VERSION}" \
         "boto3=${BOTO3_NORM_VERSION}" \
+        "cryptography=${CRYPTOGRAPHY_NORM_VERSION}" \
         "psycopg2=${PSYCOPG2_NORM_VERSION}" \
         "flask-bcrypt=${FLASK_BCRYPT_NORM_VERSION}" \
         ; \
@@ -117,14 +120,11 @@ ENV AIRFLOW_DAG="${AIRFLOW_HOME}/dags"
 RUN mkdir -p "${AIRFLOW_DAG}"
 
 COPY setup_auth.py "${AIRFLOW_HOME}/setup_auth.py"
-VOLUME "${AIRFLOW_HOME}/logs"
-COPY airflow.cfg "${AIRFLOW_HOME}/airflow.cfg"
-COPY unittests.cfg "${AIRFLOW_HOME}/unittests.cfg"
 
 # Less verbose logging
 COPY log4j.properties "${SPARK_HOME}/conf/log4j.properties"
 
-# for optional S3 logging
+# For S3 logging feature
 COPY ./config/ "${AIRFLOW_HOME}/config/"
 
 # All the other env vars that don't affect the build here
