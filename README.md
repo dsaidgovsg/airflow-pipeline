@@ -1,8 +1,8 @@
 # Airflow Pipeline Docker Image Set-up
 
-[![Build Status](https://travis-ci.org/guangie88/airflow-pipeline.svg?branch=master)](https://travis-ci.org/guangie88/airflow-pipeline)
+![CI Status](https://img.shields.io/github/workflow/status/guangie88/airflow-pipeline/CI/master?label=CI&logo=github&style=for-the-badge)
 
-This repo is a Travis build matrix set-up to generate Docker images of
+This repo is a GitHub Actions build matrix set-up to generate Docker images of
 [Airflow](https://airflow.incubator.apache.org/), and other major applications
 as below:
 
