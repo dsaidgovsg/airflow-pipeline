@@ -22,8 +22,8 @@ fi
 # For Airflow scheduler and webserver usage
 POSTGRES_TIMEOUT=60
 
-getent group "${GROUP}" || groupadd -r "${GROUP}"
-id "${USER}" || useradd -rmg "${GROUP}" "${USER}"
+getent group "${GROUP}" || addgroup -S "${GROUP}"
+id "${USER}" || adduser -S -D -G "${GROUP}" "${USER}"
 
 echo "Running as: ${USER}"
 if [ "${USER}" != "root" ]; then
