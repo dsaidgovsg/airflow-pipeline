@@ -33,7 +33,7 @@ longer trigger any of the convenient environment variables / functionalities.
 
 The above convenience functionalities include:
 
-1. Discovering if Postgres is ready
+1. Discovering if database (`sqlite` and `postgres`) is ready
 2. Automatically running `airflow initdb`
 3. Easy creation of Airflow Web UI admin user by simple env vars.
 

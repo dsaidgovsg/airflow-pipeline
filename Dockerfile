@@ -6,6 +6,13 @@ FROM guangie88/spark-k8s-addons:${SPARK_VERSION}_hadoop-${HADOOP_VERSION} AS bas
 # Airflow will run as root instead of the spark 185 user meant for k8s
 USER root
 
+# Set up gosu
+RUN set -euo pipefail && \
+    apk add --no-cache su-exec; \
+    ln -s /sbin/su-exec /usr/local/bin/gosu; \
+    gosu >/dev/null; \
+    :
+
 # Set up tini
 ARG TINI_VERSION=0.18.0
 ADD https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static-amd64 /usr/local/bin/tini
@@ -68,18 +75,12 @@ ENV SQLALCHEMY_VERSION="${SQLALCHEMY_VERSION}"
 
 ARG PYTHON_VERSION
 
-## Default user and group for running Airflow
-ARG USER=airflow
-ARG GROUP=airflow
-
 ARG BOTO3_VERSION="1.9"
 ARG CRYPTOGRAPHY_VERSION="2.8"
 ARG PSYCOPG2_VERSION="2.8"
 ARG FLASK_BCRYPT_VERSION="0.7"
 
 RUN set -euo pipefail && \
-    # Set up 
-    addgroup "${GROUP}" && adduser -g "" -D -G "${GROUP}" "${USER}"; \
     # Airflow and SQLAlchemy
     ## These two version numbers can take MAJ.MIN[.PAT]
     AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
@@ -107,7 +108,6 @@ ENV AIRFLOW_HOME="${AIRFLOW_HOME}"
 
 # Create the Airflow home
 WORKDIR ${AIRFLOW_HOME}
-RUN chown "${USER}:${GROUP}" "${AIRFLOW_HOME}"
 
 # Copy the entrypoint as root first but allow user to run
 COPY entrypoint.sh /entrypoint.sh
@@ -117,17 +117,14 @@ ENTRYPOINT ["/entrypoint.sh"]
 # Less verbose logging
 COPY log4j.properties "${SPARK_HOME}/conf/log4j.properties"
 
-# Run the rest of the Airflow set-up 
-USER "${USER}"
-
 # Setup airflow dags path
 ENV AIRFLOW_DAG="${AIRFLOW_HOME}/dags"
 RUN mkdir -p "${AIRFLOW_DAG}"
 
-COPY --chown="${USER}:${GROUP}" setup_auth.py "${AIRFLOW_HOME}/setup_auth.py"
+COPY setup_auth.py test_db_conn.py ${AIRFLOW_HOME}/
 
 # For S3 logging feature
-COPY --chown="${USER}:${GROUP}" ./config/ "${AIRFLOW_HOME}/config/"
+COPY ./config/ "${AIRFLOW_HOME}/config/"
 
 # All the other env vars that don't affect the build here
 ENV PYTHONPATH="${PYTHONPATH}:${AIRFLOW_HOME}/config"

@@ -10,9 +10,9 @@ from airflow import models, settings
 from airflow.contrib.auth.backends.password_auth import PasswordUser
 from sqlalchemy.exc import IntegrityError
 
-AIRFLOW_USER_ENV_VAR = "AIRFLOW_USER"
-AIRFLOW_EMAIL_ENV_VAR = "AIRFLOW_EMAIL"
-AIRFLOW_PASSWORD_ENV_VAR = "AIRFLOW_PASSWORD"
+AIRFLOW_WEBSERVER_USER_ENV_VAR = "AIRFLOW_WEBSERVER_USER"
+AIRFLOW_WEBSERVER_EMAIL_ENV_VAR = "AIRFLOW_WEBSERVER_EMAIL"
+AIRFLOW_WEBSERVER_PASSWORD_ENV_VAR = "AIRFLOW_WEBSERVER_PASSWORD"
 
 def add_user(username: Optional[str] = None,
              email: Optional[str] = None,
@@ -24,9 +24,9 @@ def add_user(username: Optional[str] = None,
     :param password: admin's password
     """
     user = PasswordUser(models.User())
-    user.username = username if username else os.environ[AIRFLOW_USER_ENV_VAR]
-    user.email = email if email else os.environ[AIRFLOW_EMAIL_ENV_VAR]
-    user.password = password if password else os.environ[AIRFLOW_PASSWORD_ENV_VAR]
+    user.username = username if username else os.environ[AIRFLOW_WEBSERVER_USER_ENV_VAR]
+    user.email = email if email else os.environ[AIRFLOW_WEBSERVER_EMAIL_ENV_VAR]
+    user.password = password if password else os.environ[AIRFLOW_WEBSERVER_PASSWORD_ENV_VAR]
 
     session = settings.Session()
 
@@ -44,17 +44,17 @@ if __name__ == "__main__":
         "-u", "--user",
         dest="user",
         help="Airflow Web UI Airflow admin user, can also use env var {}" \
-            .format(AIRFLOW_USER_ENV_VAR))
+            .format(AIRFLOW_WEBSERVER_USER_ENV_VAR))
     parser.add_argument(
         "-e", "--email",
         dest="email",
         help="Email of admin user, can also use env var {}" \
-            .format(AIRFLOW_EMAIL_ENV_VAR))
+            .format(AIRFLOW_WEBSERVER_EMAIL_ENV_VAR))
     parser.add_argument(
         "-p", "--password",
         dest="password",
         help="Password of admin user, can also use env var {}" \
-            .format(AIRFLOW_PASSWORD_ENV_VAR))
+            .format(AIRFLOW_WEBSERVER_PASSWORD_ENV_VAR))
     args = parser.parse_args()
 
     add_user(username=args.user, email=args.email, password=args.password)

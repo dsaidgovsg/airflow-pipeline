@@ -1,5 +1,55 @@
 # CHANGELOG
 
+## v4
+
+The following env vars are renamed:
+
+- `AIRFLOW_USER` -> `AIRFLOW_WEBSERVER_USER`
+- `AIRFLOW_EMAIL` -> `AIRFLOW_WEBSERVER_EMAIL`
+- `AIRFLOW_PASSWORD` -> `AIRFLOW_WEBSERVER_PASSWORD`
+
+Revert and allow back the usage of `gosu`, now Airflow user and group are
+always created at runtime if the `entrypoint.sh` is used. As such, the `USER` in
+Dockerfile is reverted back to `root`, and the usage of Airflow user is only
+impersonated via `gosu`. This gives much better installation / file copy
+ergonomics when other Docker images derive over this image.
+
+Also the Airflow user and group names can be overridden via the respective env
+vars:
+
+- `AIRFLOW_USER` (hence the above env vars naming change was required)
+- `AIRFLOW_GROUP`
+
+The default is `airflow:airflow`.
+
+- Distro: Alpine
+- Advertized CLI tools:
+  - `gosu`
+  - `tini`
+  - `conda`
+- Advertized additional scripts:
+  - `"${AIRFLOW_HOME}/setup_auth.py"`
+  - `"${AIRFLOW_HOME}/test_db_conn.py"`
+    - Suffice to just run `python "${AIRFLOW_HOME}/test_db_conn.py"` as it will
+      automatically take the `('core', 'sql_alchemy_conn')` Airflow conf value.
+      Both setting via env var `AIRFLOW__CORE__SQL_ALCHEMY_CONN` (this takes
+      precedence) and `airflow.cfg` conf file would work.
+- Advertized env vars:
+  - `ENABLE_AIRFLOW_TEST_DB_CONN="true"`
+    - Default to `"true"` to enable database test connection before running any
+      other Airflow commands.
+  - `ENABLE_AIRFLOW_INITDB="false"`
+  - `ENABLE_AIRFLOW_WEBSERVER_LOG="false"`
+  - `ENABLE_AIRFLOW_SETUP_AUTH="false"`
+  - `AIRFLOW_USER=airflow`
+  - `AIRFLOW_GROUP=airflow`
+  - `HADOOP_HOME="/opt/hadoop"`
+  - `HADOOP_CONF_DIR="/opt/hadoop/etc/hadoop"`
+  - `AIRFLOW_HOME="/airflow"`
+  - `AIRFLOW_DAG="${AIRFLOW_HOME}/dags"`
+  - `PYTHONPATH="${PYTHONPATH}:${AIRFLOW_HOME}/config"`
+  - `PYSPARK_SUBMIT_ARGS="--py-files ${SPARK_HOME}/python/lib/pyspark.zip pyspark-shell"`
+
 ## v3
 
 Default `ENABLE_AIRFLOW_INITDB` to `"false"` instead of `"true"`, because

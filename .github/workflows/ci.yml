@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: airflow-pipeline
-      SELF_VERSION: "v3"
+      SELF_VERSION: "v4"
       AIRFLOW_VERSION: "${{ matrix.version.airflow }}"
       PYTHON_VERSION: "${{ matrix.version.python }}"
       SQLALCHEMY_VERSION: "${{ matrix.version.sqlalchemy }}"
@@ -89,8 +89,7 @@ jobs:
           --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
           --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
           --build-arg "PYTHON_VERSION=${PYTHON_VERSION}" \
-          --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
-          --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}"
+          --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}"
     - name: Push Docker image
       run: bash push-images.sh
       env:

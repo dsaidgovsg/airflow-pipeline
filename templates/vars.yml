@@ -1,4 +1,4 @@
-self_version: "v3"
+self_version: "v4"
 
 versions:
 - airflow:    ["1.9"]

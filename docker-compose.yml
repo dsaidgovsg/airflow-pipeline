@@ -1,17 +1,6 @@
 version: '2'
 services:
-  postgres:
-    image: postgres:9.6
-    volumes:
-      - postgres:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: fixme
-      POSTGRES_PASSWORD: fixme
-      POSTGRES_DB: airflow
-    restart: always
   airflow:
-    depends_on:
-      - postgres
     build:
       context: .
       dockerfile: Dockerfile
@@ -21,14 +10,12 @@ services:
         HADOOP_VERSION: "3.1.0"
         PYTHON_VERSION: "3.6"
         SQLALCHEMY_VERSION: "1.1"
-        SPARK_PY4J: "python/lib/py4j-0.10.7-src.zip"
-        AIRFLOW_SUBPACKAGES: ""
     ports:
       - 8080:8080
     environment:
+      # This uses sqlite as database by default
       ENABLE_AIRFLOW_INITDB: "true"
       AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@postgres:5432/airflow
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__SCHEDULER__MAX_THREADS: "1"
     restart: always
-volumes:
-  postgres: {}

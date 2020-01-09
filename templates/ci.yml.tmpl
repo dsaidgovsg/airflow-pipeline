@@ -63,8 +63,7 @@ jobs:
           --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
           --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
           --build-arg "PYTHON_VERSION=${PYTHON_VERSION}" \
-          --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
-          --build-arg "SPARK_PY4J=python/lib/${PY4J_FILE}"
+          --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}"
     - name: Push Docker image
       run: bash push-images.sh
       env:
