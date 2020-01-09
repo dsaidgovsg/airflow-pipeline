@@ -3,8 +3,19 @@ ARG HADOOP_VERSION=
 
 FROM guangie88/spark-k8s-addons:${SPARK_VERSION}_hadoop-${HADOOP_VERSION} AS base
 
-# System and Hadoop side of set-up
-ARG HADOOP_VERSION=
+# Airflow will run as root instead of the spark 185 user meant for k8s
+USER root
+
+# Set up tini
+ARG TINI_VERSION=0.18.0
+ADD https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static-amd64 /usr/local/bin/tini
+RUN set -euo pipefail && \
+    chmod +x /usr/local/bin/tini; \
+    tini --version >/dev/null; \
+    :
+
+# Set up Hadoop
+ARG HADOOP_VERSION
 
 ## Other Spark / Airflow related defaults
 ARG HADOOP_HOME="/opt/hadoop"
@@ -13,20 +24,7 @@ ENV HADOOP_HOME="${HADOOP_HOME}"
 ARG HADOOP_CONF_DIR="/opt/hadoop/etc/hadoop"
 ENV HADOOP_CONF_DIR="${HADOOP_CONF_DIR}"
 
-# Airflow will run as root instead of the spark 185 user meant for k8s
-USER root
-
-# Setup airflow
 RUN set -euo pipefail && \
-    # apk requirements
-    apk add --no-cache \
-        curl \
-        su-exec \
-        ; \
-    # Set up gosu
-    ln -s /sbin/su-exec /usr/local/bin/gosu; \
-    gosu >/dev/null; \
-    # Hadoop external installation
     mkdir -p "$(dirname "${HADOOP_HOME}")"; \
     wget "https://archive.apache.org/dist/hadoop/core/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz"; \
     tar xf "hadoop-${HADOOP_VERSION}.tar.gz"; \
@@ -36,7 +34,7 @@ RUN set -euo pipefail && \
     ## AWS S3 JARs
     ## Get the aws-java-sdk version dynamic based on Hadoop version
     ## Do not use head -n1 because it will trigger 141 exit code due to early return on pipe
-    AWS_JAVA_SDK_VERSION="$(curl -s https://raw.githubusercontent.com/apache/hadoop/branch-${HADOOP_VERSION}/hadoop-project/pom.xml | grep -A1 aws-java-sdk | grep -oE "[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+" | tr "\r\n" " " | cut -d " " -f 1)"; \
+    AWS_JAVA_SDK_VERSION="$(wget -qO- https://raw.githubusercontent.com/apache/hadoop/branch-${HADOOP_VERSION}/hadoop-project/pom.xml | grep -A1 aws-java-sdk | grep -oE "[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+" | tr "\r\n" " " | cut -d " " -f 1)"; \
     cd "${HADOOP_HOME}/share/hadoop/hdfs/"; \
     wget "http://central.maven.org/maven2/org/apache/hadoop/hadoop-aws/${HADOOP_VERSION}/hadoop-aws-${HADOOP_VERSION}.jar"; \
     wget "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/${AWS_JAVA_SDK_VERSION}/aws-java-sdk-bundle-${AWS_JAVA_SDK_VERSION}.jar"; \
@@ -57,28 +55,22 @@ RUN set -euo pipefail && \
     cd "${HADOOP_HOME}/share/hadoop/tools/lib"; \
     wget https://downloads.mariadb.com/Connectors/java/connector-java-2.4.0/mariadb-java-client-2.4.0.jar; \
     cd -; \
-    # Remove unused apk packages
-    apk del \
-        curl \
-        ; \
     :
 
 ENV PATH="${PATH}:${HADOOP_HOME}/bin"
 
-# Conda side of set-up
+# Set up Airflow via conda
 ARG AIRFLOW_VERSION
 ENV AIRFLOW_VERSION="${AIRFLOW_VERSION}"
 
 ARG SQLALCHEMY_VERSION
 ENV SQLALCHEMY_VERSION="${SQLALCHEMY_VERSION}"
 
-ARG PYTHON_VERSION=
+ARG PYTHON_VERSION
 
 ## Default user and group for running Airflow
 ARG USER=airflow
-ENV USER="${USER}"
 ARG GROUP=airflow
-ENV GROUP="${GROUP}"
 
 ARG BOTO3_VERSION="1.9"
 ARG CRYPTOGRAPHY_VERSION="2.8"
@@ -99,6 +91,7 @@ RUN set -euo pipefail && \
     conda install -y \
         "python=${PYTHON_VERSION}" \
         "airflow=${AIRFLOW_NORM_VERSION}" \
+        "airflow-with-crypto=${AIRFLOW_NORM_VERSION}" \
         "airflow-with-s3=${AIRFLOW_NORM_VERSION}" \
         "sqlalchemy=${SQLALCHEMY_NORM_VERSION}" \
         "boto3=${BOTO3_NORM_VERSION}" \
@@ -114,38 +107,28 @@ ENV AIRFLOW_HOME="${AIRFLOW_HOME}"
 
 # Create the Airflow home
 WORKDIR ${AIRFLOW_HOME}
+RUN chown "${USER}:${GROUP}" "${AIRFLOW_HOME}"
+
+# Copy the entrypoint as root first but allow user to run
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x "/entrypoint.sh"
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Less verbose logging
+COPY log4j.properties "${SPARK_HOME}/conf/log4j.properties"
+
+# Run the rest of the Airflow set-up 
+USER "${USER}"
 
 # Setup airflow dags path
 ENV AIRFLOW_DAG="${AIRFLOW_HOME}/dags"
 RUN mkdir -p "${AIRFLOW_DAG}"
 
-COPY setup_auth.py "${AIRFLOW_HOME}/setup_auth.py"
-
-# Less verbose logging
-COPY log4j.properties "${SPARK_HOME}/conf/log4j.properties"
+COPY --chown="${USER}:${GROUP}" setup_auth.py "${AIRFLOW_HOME}/setup_auth.py"
 
 # For S3 logging feature
-COPY ./config/ "${AIRFLOW_HOME}/config/"
+COPY --chown="${USER}:${GROUP}" ./config/ "${AIRFLOW_HOME}/config/"
 
 # All the other env vars that don't affect the build here
 ENV PYTHONPATH="${PYTHONPATH}:${AIRFLOW_HOME}/config"
 ENV PYSPARK_SUBMIT_ARGS="--py-files ${SPARK_HOME}/python/lib/pyspark.zip pyspark-shell"
-
-## Airflow uses Postgres as its database, example env vars below
-ARG POSTGRES_HOST=localhost
-ENV POSTGRES_HOST="${POSTGRES_HOST}"
-
-ARG POSTGRES_PORT=5999
-ENV POSTGRES_PORT="${POSTGRES_PORT}"
-
-ARG POSTGRES_USER=fixme
-ENV POSTGRES_USER="${POSTGRES_USER}"
-
-ARG POSTGRES_PASSWORD=fixme
-ENV POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
-
-ARG POSTGRES_DB=airflow
-ENV POSTGRES_DB="${POSTGRES_DB}"
-
-COPY entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]

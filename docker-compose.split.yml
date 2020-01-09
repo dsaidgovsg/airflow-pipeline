@@ -8,11 +8,13 @@ services:
       POSTGRES_USER: fixme
       POSTGRES_PASSWORD: fixme
       POSTGRES_DB: airflow
+    networks: &networks
+    - internal
     restart: always
-  airflow:
+  initdb:
     depends_on:
       - postgres
-    build:
+    build: &build
       context: .
       dockerfile: Dockerfile
       args:
@@ -23,12 +25,30 @@ services:
         SQLALCHEMY_VERSION: "1.1"
         SPARK_PY4J: "python/lib/py4j-0.10.7-src.zip"
         AIRFLOW_SUBPACKAGES: ""
-    ports:
-      - 8080:8080
-    environment:
-      ENABLE_AIRFLOW_INITDB: "true"
+    command: ["airflow", "initdb"]
+    environment: &environment
       AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@postgres:5432/airflow
+    networks: *networks
+  webserver:
+    depends_on:
+      - postgres
+    build: *build
+    command: ["bash", "-c", "sleep 5 && airflow webserver"]
+    ports:
+      - 8080:8080
+    environment: *environment
+    networks: *networks
+    restart: always
+  scheduler:
+    depends_on:
+      - postgres
+    build: *build
+    command: ["bash", "-c", "sleep 5 && airflow scheduler"]
+    environment: *environment
+    networks: *networks
     restart: always
 volumes:
   postgres: {}
+networks:
+  internal:

@@ -1,36 +1,25 @@
 #!/bin/bash
 set -euo pipefail
 
-# Set to "false" to disable Airflow initdb at the start
-ENABLE_AIRFLOW_INITDB="${ENABLE_AIRFLOW_INITDB:-true}"
+# This "early returns" so that it gives bash-like effect when we don't want to
+# do Airflow related operations
+if [ "$#" -ne 0 ]; then
+  exec tini -- "$@"
+fi
+
+echo "Running as: $(whoami)"
+
+# Set to "true" to enable the following env vars
+ENABLE_AIRFLOW_INITDB="${ENABLE_AIRFLOW_INITDB:-false}"
+ENABLE_AIRFLOW_WEBSERVER_LOG="${ENABLE_AIRFLOW_WEBSERVER_LOG:-false}"
+ENABLE_AIRFLOW_SETUP_AUTH="${ENABLE_AIRFLOW_SETUP_AUTH:-false}"
 
 # To include Hadoop JAR classes for Spark usage
 SPARK_DIST_CLASSPATH="$(hadoop classpath)"
 export SPARK_DIST_CLASSPATH
 
-# This "early returns" so that it gives bash-like effect when we don't want to
-# do Airflow related operations
-if [ "$#" -eq 0 ]; then
-  exec bash
-elif [ "$1" = "gosu-run" ]; then
-  shift
-  exec gosu "${USER}" "$@"
-elif [ "$1" != "afp-scheduler" ] && [ "$1" != "afp-webserver" ]; then
-  exec "$@"
-fi
-
 # For Airflow scheduler and webserver usage
 POSTGRES_TIMEOUT=60
-
-getent group "${GROUP}" || addgroup -S "${GROUP}"
-id "${USER}" || adduser -S -D -G "${GROUP}" "${USER}"
-
-echo "Running as: ${USER}"
-if [ "${USER}" != "root" ]; then
-  echo "Changing owner of files in ${AIRFLOW_HOME} to ${USER}"
-  chown -R "${USER}" "${AIRFLOW_HOME}" || true
-fi
-
 CONN_PARTS_REGEX='postgresql://\([-a-zA-Z0-9_]\+\):\([[:print:]]\+\)@\([-a-zA-Z0-9_\.]\+\):\([0-9]\+\)/\([[:print:]]\+\)'
 
 # Do not use `/` or whatever symbol that exists in the above var
@@ -67,20 +56,28 @@ fi
 set -e
 
 # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
-if [ "${ENABLE_AIRFLOW_INITDB}" = "true" ]; then
-  gosu "${USER}" airflow initdb
+if [ "${ENABLE_AIRFLOW_INITDB}" = "true" ] || [ "${ENABLE_AIRFLOW_INITDB}" = "True" ]; then
+  echo "Initializing Postgres database for Airflow..."
+  airflow initdb
 fi
 
-if [ "$1" = "afp-scheduler" ]; then
-  (while :; do echo "Serving logs"; gosu "${USER}" airflow serve_logs; sleep 1; done) &
-  (while :; do echo "Starting scheduler"; gosu "${USER}" airflow scheduler -n "${SCHEDULER_RUNS:-5}"; sleep 1; done)
-elif [ "$1" = "afp-webserver" ]; then
-  echo "Starting webserver"
-  python "${AIRFLOW_HOME}"/setup_auth.py
-
-  if [[ -v WEBSERVER_PORT ]]; then
-    exec gosu "${USER}" airflow webserver -p "${WEBSERVER_PORT}"
-  else
-    exec gosu "${USER}" airflow webserver
-  fi
+if [ "${ENABLE_AIRFLOW_SETUP_AUTH}" = "true" ] || [ "${ENABLE_AIRFLOW_SETUP_AUTH}" = "True" ]; then
+  echo "Adding admin user for Airflow Web UI login..."
+  python "${AIRFLOW_HOME}/setup_auth.py" \
+    -u "${AIRFLOW_USER}" \
+    -e "${AIRFLOW_EMAIL}" \
+    -p "${AIRFLOW_PASSWORD}"
 fi
+
+# Start webserver as background process first
+if [ "${ENABLE_AIRFLOW_WEBSERVER_LOG}" = "true" ] || [ "${ENABLE_AIRFLOW_WEBSERVER_LOG}" = "True" ]; then
+  echo "Starting webserver with logging..."
+  airflow webserver &
+else
+  echo "Starting webserver without logging..."
+  airflow webserver >/dev/null &
+fi
+
+# Then start scheduler as foreground
+echo "Starting scheduler..."
+exec tini -- airflow scheduler

@@ -1,25 +1,32 @@
-"""Setup password authentication for Airflow Admin UI
+"""
+Setup password authentication for Airflow Admin UI
 """
 
+import argparse
 import os
-from sqlalchemy.exc import IntegrityError
+from typing import Optional
+
 from airflow import models, settings
 from airflow.contrib.auth.backends.password_auth import PasswordUser
+from sqlalchemy.exc import IntegrityError
 
+AIRFLOW_USER_ENV_VAR = "AIRFLOW_USER"
+AIRFLOW_EMAIL_ENV_VAR = "AIRFLOW_EMAIL"
+AIRFLOW_PASSWORD_ENV_VAR = "AIRFLOW_PASSWORD"
 
-def add_user(username=os.environ['AIRFLOW_USER'],
-             email=os.environ['AIRFLOW_EMAIL'],
-             password=os.environ['AIRFLOW_PASSWORD']):
-    """Create the admin user
+def add_user(username: Optional[str] = None,
+             email: Optional[str] = None,
+             password: Optional[str] = None) -> None:
+    """
+    Create the admin user. If user already exists, the process will ignore the error.
     :param username: airflow admin ui's username
     :param email: email of admin
     :param password: admin's password
-    :return: None
     """
     user = PasswordUser(models.User())
-    user.username = username
-    user.email = email
-    user.password = password
+    user.username = username if username else os.environ[AIRFLOW_USER_ENV_VAR]
+    user.email = email if email else os.environ[AIRFLOW_EMAIL_ENV_VAR]
+    user.password = password if password else os.environ[AIRFLOW_PASSWORD_ENV_VAR]
 
     session = settings.Session()
 
@@ -32,4 +39,22 @@ def add_user(username=os.environ['AIRFLOW_USER'],
         session.close()
 
 if __name__ == "__main__":
-    add_user()
+    parser = argparse.ArgumentParser(description="Set up Airflow Web UI authentication.")
+    parser.add_argument(
+        "-u", "--user",
+        dest="user",
+        help="Airflow Web UI Airflow admin user, can also use env var {}" \
+            .format(AIRFLOW_USER_ENV_VAR))
+    parser.add_argument(
+        "-e", "--email",
+        dest="email",
+        help="Email of admin user, can also use env var {}" \
+            .format(AIRFLOW_EMAIL_ENV_VAR))
+    parser.add_argument(
+        "-p", "--password",
+        dest="password",
+        help="Password of admin user, can also use env var {}" \
+            .format(AIRFLOW_PASSWORD_ENV_VAR))
+    args = parser.parse_args()
+
+    add_user(username=args.user, email=args.email, password=args.password)

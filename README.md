@@ -21,37 +21,53 @@ Additionally, Conda and specialized environment are being used to perform all
 Python related installations, so that it is easy to generate images with
 specific Python versions without conflicting dependency package versions.
 
-The entrypoint of this repository is heavily specialized to give the following
-effects:
+Also, for convenience, the current version runs both the `webserver` and
+`scheduler` together in the same instance by the default entrypoint, with the
+`webserver` being at the background and `scheduler` at the foreground. All the
+convenient environment variables only works on the basis that the entrypoint is
+used without any extra command.
 
-- (Airflow) If the first command/arg is `afp-scheduler` or `afp-webserver`, the
-  entrypoint will run Airflow service, and you may need to provide additional
-  environment variables to run the service properly.
+If there is a preference to run the various Airflow CLI services separately,
+you can simply pass the full command into the Docker command, but it will no
+longer trigger any of the convenient environment variables / functionalities.
 
-  It is recommended that you run `docker-compose up --build` instead to run the
-  orchestration of services that involve both the above services.
+The above convenience functionalities include:
 
-- (Bash-like)
-    1. If no command/arg is passed in, it will just run a `bash` interactive
-       shell as `root` user.
+1. Discovering if Postgres is ready
+2. Automatically running `airflow initdb`
+3. Easy creation of Airflow Web UI admin user by simple env vars.
 
-       E.g. `docker run --rm -it airflow-pipeline` -> (bash interactive)
+Also note that the command that will be run will also be run as `airflow`
+user/group, unless the host overrides the user/group to run the Docker
+container.
 
-    2. If the first command/arg is `gosu-run`, it will run the **remaining**
-       arguments like this: `gosu ${USER} $@`, where `$@` are the rest of the
-       arguments.
+## Commands to demo
 
-       E.g. `docker run --rm -it airflow-pipeline gosu-run whoami` -> `afpuser`
+You will need `docker-compose` and `docker` command installed.
 
-    3. If the first command/arg is neither `afp-scheduler` nor `afp-webserver`,
-       it will simply run the command and arguments as it is as `root` user,
-       with no presumption of running under `bash`.
+### Default Combined Airflow Webserver and Scheduler
 
-       E.g. `docker run --rm -it airflow-pipeline whoami` -> `root`
-       E.g. `docker run --rm -it airflow-pipeline echo Hello` -> `Hello`
+```bash
+docker-compose up --build
+```
 
-Note that the specialized Conda environment is activated in all Bash-like
-scenarios, regardless of whether `gosu` was used to run as a different user.
+Navigate to `http://localhost:8080/` to try out the DAGs.
+
+Note that the `webserver` logs are suppressed by default.
+
+`CTRL-C` to gracefully terminate the services.
+
+### Separate Airflow Webserver and Scheduler
+
+```bash
+docker-compose -f docker-compose.split.yml up --build
+```
+
+Navigate to `http://localhost:8080/` to try out the DAGs.
+
+Both `webserver` and `scheduler` logs are shown separately.
+
+`CTRL-C` to gracefully terminate the services.
 
 ## Versioning
 
@@ -84,10 +100,12 @@ All self-versioned change logs are listed in [`CHANGELOG.md`](CHANGELOG.md).
 The advertized CLI tools and env vars are also listed in the detailed change
 logs.
 
-## How to build
+## How to Manually Build Docker Image
+
+Example build command:
 
 ```bash
-AIRFLOW_VERSION=1.9
+AIRFLOW_VERSION=1.10
 SPARK_VERSION=2.4.4
 HADOOP_VERSION=3.1.0
 PYTHON_VERSION=3.6
@@ -128,3 +146,8 @@ repository are likely to stay Alpine based as well.
 However, note that there is no guarantee that this is always true, and any GNU
 tool can break due to discrepancy between Alpine and other distributions such as
 Debian.
+
+Also, currently the default entrypoint without command logic assumes that
+a Postgres server will always be used (the default `sqlite` can work as an
+alternative). As such, when using in this mode, an external Postgres server
+has to be made available for Airflow services to access.
