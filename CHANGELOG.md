@@ -35,8 +35,11 @@ The default is `airflow:airflow`.
       Both setting via env var `AIRFLOW__CORE__SQL_ALCHEMY_CONN` (this takes
       precedence) and `airflow.cfg` conf file would work.
 - Advertized env vars:
+  - `ENABLE_AIRFLOW_CHOWN="true"`
+    - Default to `"true"`. Allow entrypoint to perform recursive `chown` to
+      `${AIRFLOW_USER}:${AIRFLOW_GROUP}` on `${AIRFLOW_HOME}` directory.
   - `ENABLE_AIRFLOW_TEST_DB_CONN="true"`
-    - Default to `"true"` to enable database test connection before running any
+    - Default to `"true"`. Enable database test connection before running any
       other Airflow commands.
   - `ENABLE_AIRFLOW_INITDB="false"`
   - `ENABLE_AIRFLOW_WEBSERVER_LOG="false"`

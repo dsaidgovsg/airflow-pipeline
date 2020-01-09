@@ -6,20 +6,25 @@ AIRFLOW_USER="${AIRFLOW_USER:-airflow}"
 AIRFLOW_GROUP="${AIRFLOW_GROUP:-airflow}"
 addgroup "${AIRFLOW_GROUP}" && adduser -g "" -D -G "${AIRFLOW_GROUP}" "${AIRFLOW_USER}"
 
+# Set to "true" to enable the following env vars
+ENABLE_AIRFLOW_CHOWN="${ENABLE_AIRFLOW_CHOWN:-true}"
+ENABLE_AIRFLOW_TEST_DB_CONN="${ENABLE_AIRFLOW_TEST_DB_CONN:-true}"
+ENABLE_AIRFLOW_INITDB="${ENABLE_AIRFLOW_INITDB:-false}"
+ENABLE_AIRFLOW_WEBSERVER_LOG="${ENABLE_AIRFLOW_WEBSERVER_LOG:-false}"
+ENABLE_AIRFLOW_SETUP_AUTH="${ENABLE_AIRFLOW_SETUP_AUTH:-false}"
+
 # This possibly changes the log directory that might be mounted in
-chown "${AIRFLOW_USER}:${AIRFLOW_GROUP}" -R "${AIRFLOW_HOME}/"
+if [ "${ENABLE_AIRFLOW_CHOWN}" = "true" ] || [ "${ENABLE_AIRFLOW_CHOWN}" = "True" ]; then
+  echo "Chowning ${AIRFLOW_HOME} to ${AIRFLOW_USER}:${AIRFLOW_GROUP}..."
+  chown "${AIRFLOW_USER}:${AIRFLOW_GROUP}" -R "${AIRFLOW_HOME}/"
+  echo "Chowning done!"
+fi
 
 # This "early returns" so that it gives bash-like effect when we don't want to
 # do Airflow related operations
 if [ "$#" -ne 0 ]; then
   exec tini -- gosu "${AIRFLOW_USER}" "$@"
 fi
-
-# Set to "true" to enable the following env vars
-ENABLE_AIRFLOW_TEST_DB_CONN="${ENABLE_AIRFLOW_TEST_DB_CONN:-true}"
-ENABLE_AIRFLOW_INITDB="${ENABLE_AIRFLOW_INITDB:-false}"
-ENABLE_AIRFLOW_WEBSERVER_LOG="${ENABLE_AIRFLOW_WEBSERVER_LOG:-false}"
-ENABLE_AIRFLOW_SETUP_AUTH="${ENABLE_AIRFLOW_SETUP_AUTH:-false}"
 
 # To include Hadoop JAR classes for Spark usage
 SPARK_DIST_CLASSPATH="$(hadoop classpath)"
