@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: fixme
       POSTGRES_DB: airflow
     restart: always
-  initdb:
+  scheduler:
     depends_on:
       - postgres
     build: &build
@@ -21,11 +21,14 @@ services:
         HADOOP_VERSION: "3.1.0"
         PYTHON_VERSION: "3.6"
         SQLALCHEMY_VERSION: "1.1"
-    command: ["bash", "-c", "python test_db_conn.py && airflow initdb"]
+    command: ["bash", "-c", "python test_db_conn.py && airflow initdb && airflow scheduler"]
+    volumes:
+      - airflow_logs:/airflow/logs/
     environment: &environment
       AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    restart: always
   webserver:
     depends_on:
       - postgres
@@ -33,14 +36,10 @@ services:
     command: ["bash", "-c", "sleep 7 && airflow webserver"]
     ports:
       - 8080:8080
-    environment: *environment
-    restart: always
-  scheduler:
-    depends_on:
-      - postgres
-    build: *build
-    command: ["bash", "-c", "sleep 7 && airflow scheduler"]
+    volumes:
+      - airflow_logs:/airflow/logs/
     environment: *environment
     restart: always
 volumes:
   postgres: {}
+  airflow_logs: {}
