@@ -1,17 +1,29 @@
 #!/bin/bash
 set -euo pipefail
 
-# Set up default user and group for running Airflow
-AIRFLOW_USER="${AIRFLOW_USER:-airflow}"
-AIRFLOW_GROUP="${AIRFLOW_GROUP:-airflow}"
-addgroup "${AIRFLOW_GROUP}" && adduser -g "" -D -G "${AIRFLOW_GROUP}" "${AIRFLOW_USER}"
-
-# Set to "true" to enable the following env vars
+# Set to "false" to disable the following env vars
+ENABLE_AIRFLOW_ADD_USER_GROUP="${ENABLE_AIRFLOW_ADD_USER_GROUP:-true}"
 ENABLE_AIRFLOW_CHOWN="${ENABLE_AIRFLOW_CHOWN:-true}"
 ENABLE_AIRFLOW_TEST_DB_CONN="${ENABLE_AIRFLOW_TEST_DB_CONN:-true}"
+
+# Set to "true" to enable the following env vars
 ENABLE_AIRFLOW_INITDB="${ENABLE_AIRFLOW_INITDB:-false}"
 ENABLE_AIRFLOW_WEBSERVER_LOG="${ENABLE_AIRFLOW_WEBSERVER_LOG:-false}"
 ENABLE_AIRFLOW_SETUP_AUTH="${ENABLE_AIRFLOW_SETUP_AUTH:-false}"
+
+# Set up default user and group for running Airflow
+if [ "${ENABLE_AIRFLOW_ADD_USER_GROUP}" = "true" ] || [ "${ENABLE_AIRFLOW_ADD_USER_GROUP}" = "True" ]; then
+  AIRFLOW_USER="${AIRFLOW_USER:-airflow}"
+  AIRFLOW_GROUP="${AIRFLOW_GROUP:-airflow}"
+
+  echo "Adding Airflow user \"${AIRFLOW_USER}\" and group \"${AIRFLOW_GROUP}\"..."
+  addgroup "${AIRFLOW_GROUP}"
+  adduser -g "" -D -G "${AIRFLOW_GROUP}" "${AIRFLOW_USER}"
+  echo "Airflow user and group added successfully!"
+else
+  AIRFLOW_USER="$(id -nu)"
+  AIRFLOW_GROUP="$(id -ng)"
+fi
 
 # This possibly changes the log directory that might be mounted in
 if [ "${ENABLE_AIRFLOW_CHOWN}" = "true" ] || [ "${ENABLE_AIRFLOW_CHOWN}" = "True" ]; then

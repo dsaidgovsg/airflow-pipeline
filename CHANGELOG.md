@@ -35,6 +35,10 @@ The default is `airflow:airflow`.
       Both setting via env var `AIRFLOW__CORE__SQL_ALCHEMY_CONN` (this takes
       precedence) and `airflow.cfg` conf file would work.
 - Advertized env vars:
+  - `ENABLE_AIRFLOW_ADD_USER_GROUP="true"`
+    - Default to `"true"`. Add Airflow user and group based on `AIRFLOW_USER`
+      and `AIRFLOW_GROUP`. If set to `"false"`, you are likely and should set
+      `ENABLE_AIRFLOW_CHOWN` to `"false"`.
   - `ENABLE_AIRFLOW_CHOWN="true"`
     - Default to `"true"`. Allow entrypoint to perform recursive `chown` to
       `${AIRFLOW_USER}:${AIRFLOW_GROUP}` on `${AIRFLOW_HOME}` directory.
