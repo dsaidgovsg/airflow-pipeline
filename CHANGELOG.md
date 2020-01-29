@@ -27,6 +27,12 @@ The default is `airflow:airflow`.
   - `gosu`
   - `tini`
   - `conda`
+- Advertized JARs for Hadoop:
+  - Hadoop AWS SDK
+  - AWS Java SDK Bundle
+  - GCS Connector
+  - MariaDB Connector
+  - Postgres JDBC
 - Advertized additional scripts:
   - `"${AIRFLOW_HOME}/setup_auth.py"`
   - `"${AIRFLOW_HOME}/test_db_conn.py"`

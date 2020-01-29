@@ -43,7 +43,7 @@ RUN set -euo pipefail && \
     ## Do not use head -n1 because it will trigger 141 exit code due to early return on pipe
     AWS_JAVA_SDK_VERSION="$(wget -qO- https://raw.githubusercontent.com/apache/hadoop/branch-${HADOOP_VERSION}/hadoop-project/pom.xml | grep -A1 aws-java-sdk | grep -oE "[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+" | tr "\r\n" " " | cut -d " " -f 1)"; \
     cd "${HADOOP_HOME}/share/hadoop/hdfs/"; \
-    wget "http://central.maven.org/maven2/org/apache/hadoop/hadoop-aws/${HADOOP_VERSION}/hadoop-aws-${HADOOP_VERSION}.jar"; \
+    wget "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/${HADOOP_VERSION}/hadoop-aws-${HADOOP_VERSION}.jar"; \
     wget "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/${AWS_JAVA_SDK_VERSION}/aws-java-sdk-bundle-${AWS_JAVA_SDK_VERSION}.jar"; \
     cd -; \
     printf "\
@@ -58,9 +58,11 @@ RUN set -euo pipefail && \
     cd "${HADOOP_HOME}/share/hadoop/hdfs/"; \
     wget https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop2-latest.jar; \
     cd -; \
-    ## MariaDB JAR
     cd "${HADOOP_HOME}/share/hadoop/tools/lib"; \
+    ## MariaDB JAR
     wget https://downloads.mariadb.com/Connectors/java/connector-java-2.4.0/mariadb-java-client-2.4.0.jar; \
+    ## Postgres JDBC JAR
+    wget https://jdbc.postgresql.org/download/postgresql-42.2.9.jar; \
     cd -; \
     :
 
