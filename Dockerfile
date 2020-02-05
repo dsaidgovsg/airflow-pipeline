@@ -91,17 +91,38 @@ RUN set -euo pipefail && \
     CRYPTOGRAPHY_NORM_VERSION="$(printf "%s.%s" "${CRYPTOGRAPHY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     PSYCOPG2_NORM_VERSION="$(printf "%s.%s" "${PSYCOPG2_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     FLASK_BCRYPT_NORM_VERSION="$(printf "%s.%s" "${FLASK_BCRYPT_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
-    conda install -y \
-        "python=${PYTHON_VERSION}" \
-        "airflow=${AIRFLOW_NORM_VERSION}" \
-        "airflow-with-crypto=${AIRFLOW_NORM_VERSION}" \
-        "airflow-with-s3=${AIRFLOW_NORM_VERSION}" \
-        "sqlalchemy=${SQLALCHEMY_NORM_VERSION}" \
-        "boto3=${BOTO3_NORM_VERSION}" \
-        "cryptography=${CRYPTOGRAPHY_NORM_VERSION}" \
-        "psycopg2=${PSYCOPG2_NORM_VERSION}" \
-        "flask-bcrypt=${FLASK_BCRYPT_NORM_VERSION}" \
-        ; \
+    if [[ "${AIRFLOW_NORM_VERSION}" == "1.9.*" ]]; then \
+        conda install -y \
+            "python=${PYTHON_VERSION}" \
+            "airflow=${AIRFLOW_NORM_VERSION}" \
+            "airflow-with-celery=${AIRFLOW_NORM_VERSION}" \
+            "airflow-with-crypto=${AIRFLOW_NORM_VERSION}" \
+            "airflow-with-dask=${AIRFLOW_NORM_VERSION}" \
+            "airflow-with-s3=${AIRFLOW_NORM_VERSION}" \
+            "airflow-with-slack=${AIRFLOW_NORM_VERSION}" \
+            "sqlalchemy=${SQLALCHEMY_NORM_VERSION}" \
+            "boto3=${BOTO3_NORM_VERSION}" \
+            "cryptography=${CRYPTOGRAPHY_NORM_VERSION}" \
+            "psycopg2=${PSYCOPG2_NORM_VERSION}" \
+            "flask-bcrypt=${FLASK_BCRYPT_NORM_VERSION}" \
+            ; \
+    else \
+        conda install -y \
+            "python=${PYTHON_VERSION}" \
+            "airflow=${AIRFLOW_NORM_VERSION}" \
+            "airflow-with-celery=${AIRFLOW_NORM_VERSION}" \
+            "airflow-with-crypto=${AIRFLOW_NORM_VERSION}" \
+            "airflow-with-dask=${AIRFLOW_NORM_VERSION}" \
+            "airflow-with-kubernetes=${AIRFLOW_NORM_VERSION}" \
+            "airflow-with-s3=${AIRFLOW_NORM_VERSION}" \
+            "airflow-with-slack=${AIRFLOW_NORM_VERSION}" \
+            "sqlalchemy=${SQLALCHEMY_NORM_VERSION}" \
+            "boto3=${BOTO3_NORM_VERSION}" \
+            "cryptography=${CRYPTOGRAPHY_NORM_VERSION}" \
+            "psycopg2=${PSYCOPG2_NORM_VERSION}" \
+            "flask-bcrypt=${FLASK_BCRYPT_NORM_VERSION}" \
+            ; \
+    fi; \
     conda clean -a -y; \
     :
 

@@ -27,6 +27,13 @@ The default is `airflow:airflow`.
   - `gosu`
   - `tini`
   - `conda`
+- Advertized Airflow add-ons installed:
+  - `airflow-with-celery`
+  - `airflow-with-crypto`
+  - `airflow-with-dask`
+  - `airflow-with-kubernetes` (only for Airflow 1.10)
+  - `airflow-with-s3`
+  - `airflow-with-slack`
 - Advertized JARs for Hadoop:
   - Hadoop AWS SDK
   - AWS Java SDK Bundle
