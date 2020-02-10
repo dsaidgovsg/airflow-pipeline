@@ -106,8 +106,8 @@ Example build command:
 
 ```bash
 AIRFLOW_VERSION=1.10
-SPARK_VERSION=2.4.4
-HADOOP_VERSION=3.1.0
+SPARK_VERSION=3.0.0-preview2-rc2
+HADOOP_VERSION=3.2.0
 PYTHON_VERSION=3.6
 SQLALCHEMY_VERSION=1.3
 docker build -t airflow-pipeline \

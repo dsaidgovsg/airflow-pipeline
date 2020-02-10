@@ -6,9 +6,10 @@ services:
       dockerfile: Dockerfile
       args:
         AIRFLOW_VERSION: "1.10"
-        SPARK_VERSION: "2.4.4"
+        SPARK_VERSION: "2.4.5"
         HADOOP_VERSION: "3.1.0"
-        PYTHON_VERSION: "3.6"
+        SCALA_VERSION: "2.12"
+        PYTHON_VERSION: "3.7"
         SQLALCHEMY_VERSION: "1.3"
     ports:
       - 8080:8080

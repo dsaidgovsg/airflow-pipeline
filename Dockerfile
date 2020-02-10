@@ -1,16 +1,20 @@
+ARG BASE_VERSION=v2
 ARG SPARK_VERSION=
 ARG HADOOP_VERSION=
+ARG SCALA_VERSION=
 
-FROM guangie88/spark-k8s-addons:${SPARK_VERSION}_hadoop-${HADOOP_VERSION} AS base
+FROM guangie88/spark-k8s-addons:${BASE_VERSION}_${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_scala-${SCALA_VERSION} AS base
 
 # Airflow will run as root instead of the spark 185 user meant for k8s
 USER root
 
 # Set up gosu
 RUN set -euo pipefail && \
-    apk add --no-cache su-exec; \
-    ln -s /sbin/su-exec /usr/local/bin/gosu; \
-    gosu >/dev/null; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends gosu; \
+	rm -rf /var/lib/apt/lists/*; \
+    # Verify that the binary works
+	gosu nobody true; \
     :
 
 # Set up tini
@@ -92,7 +96,7 @@ RUN set -euo pipefail && \
     PSYCOPG2_NORM_VERSION="$(printf "%s.%s" "${PSYCOPG2_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     FLASK_BCRYPT_NORM_VERSION="$(printf "%s.%s" "${FLASK_BCRYPT_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     if [[ "${AIRFLOW_NORM_VERSION}" == "1.9.*" ]]; then \
-        conda install -y \
+        conda install -p "${CONDA_PREFIX}" -y \
             "python=${PYTHON_VERSION}" \
             "airflow=${AIRFLOW_NORM_VERSION}" \
             "airflow-with-celery=${AIRFLOW_NORM_VERSION}" \
@@ -107,7 +111,7 @@ RUN set -euo pipefail && \
             "flask-bcrypt=${FLASK_BCRYPT_NORM_VERSION}" \
             ; \
     else \
-        conda install -y \
+        conda install -p "${CONDA_PREFIX}" -y \
             "python=${PYTHON_VERSION}" \
             "airflow=${AIRFLOW_NORM_VERSION}" \
             "airflow-with-celery=${AIRFLOW_NORM_VERSION}" \

@@ -17,13 +17,16 @@ jobs:
 {%- for airflow in v.airflow %}
 {%- for spark in v.spark %}
 {%- for hadoop in v.hadoop %}
+{%- for scala in v.scala %}
 {%- for python in v.python %}
 {%- for sqlalchemy in v.sqlalchemy %}
         - airflow:    "{{ airflow }}"
-          python:     "{{ python }}"
-          sqlalchemy: "{{ sqlalchemy }}"
           spark:      "{{ spark }}"
           hadoop:     "{{ hadoop }}"
+          scala:      "{{ scala }}"
+          python:     "{{ python }}"
+          sqlalchemy: "{{ sqlalchemy }}"
+{%- endfor %}
 {%- endfor %}
 {%- endfor %}
 {%- endfor %}
@@ -34,19 +37,21 @@ jobs:
     env:
       IMAGE_NAME: airflow-pipeline
       SELF_VERSION: "{{ self_version }}"
+      BASE_VERSION: "v2"
       {% raw -%}
       AIRFLOW_VERSION: "${{ matrix.version.airflow }}"
-      PYTHON_VERSION: "${{ matrix.version.python }}"
-      SQLALCHEMY_VERSION: "${{ matrix.version.sqlalchemy }}"
       SPARK_VERSION: "${{ matrix.version.spark }}"
       HADOOP_VERSION: "${{ matrix.version.hadoop }}"
+      SCALA_VERSION: "${{ matrix.version.scala }}"
+      PYTHON_VERSION: "${{ matrix.version.python }}"
+      SQLALCHEMY_VERSION: "${{ matrix.version.sqlalchemy }}"
       {%- endraw %}
     steps:
     - name: Checkout code
       uses: actions/checkout@v1
     - name: Install tera-cli
       run: |-
-        wget https://github.com/guangie88/tera-cli/releases/download/v0.2.1/tera_linux_amd64 -O /tmp/tera
+        wget https://github.com/guangie88/tera-cli/releases/download/v0.3.0/tera_linux_amd64 -O /tmp/tera
         chmod +x /tmp/tera
     - name: Check differences between ci.yml and ci.yml.tmpl
       run: |-
@@ -55,15 +60,15 @@ jobs:
         if ! diff .github/workflows/ci.yml .github/workflows/ci.yml.backup; then echo "ci.yml.tmpl and ci.yml differs!" && exit 1; fi
     - name: Build Docker image
       run: |-
-        PY4J_FILE=$(curl -s https://github.com/apache/spark/tree/v${SPARK_VERSION}/python/lib | grep -oE 'py4j-[^\s]+-src\.zip' | uniq)
-        echo "PY4J_FILE - ${PY4J_FILE}"
-        TAG_NAME="${SELF_VERSION}_${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_python-${PYTHON_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}"
+        TAG_NAME="${SELF_VERSION}_${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_scala-${SCALA_VERSION}_python-${PYTHON_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}"
         docker build . -t "${IMAGE_NAME}:${TAG_NAME}" \
+          --build-arg "BASE_VERSION=${BASE_VERSION}" \
           --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
           --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
+          --build-arg "SCALA_VERSION=${SCALA_VERSION}" \
           --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
           --build-arg "PYTHON_VERSION=${PYTHON_VERSION}" \
-          --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}"
+          --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
     - name: Push Docker image
       run: bash push-images.sh
       env:

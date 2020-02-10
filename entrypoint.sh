@@ -18,7 +18,7 @@ if [ "${ENABLE_AIRFLOW_ADD_USER_GROUP}" = "true" ] || [ "${ENABLE_AIRFLOW_ADD_US
 
   echo "Adding Airflow user \"${AIRFLOW_USER}\" and group \"${AIRFLOW_GROUP}\"..."
   addgroup "${AIRFLOW_GROUP}"
-  adduser -g "" -D -G "${AIRFLOW_GROUP}" "${AIRFLOW_USER}"
+  adduser --gecos "" --disabled-password --ingroup "${AIRFLOW_GROUP}" "${AIRFLOW_USER}"
   echo "Airflow user and group added successfully!"
 else
   AIRFLOW_USER="$(id -nu)"

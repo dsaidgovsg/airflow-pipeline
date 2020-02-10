@@ -1,5 +1,61 @@
 # CHANGELOG
 
+## v5
+
+The only change from `v4` is the distro has been changed from Alpine to Debian,
+because only the Spark v3 preview release candidates have been built. The
+Kubernetes Dockerfiles for these tags are entirely based on Debian, hence the
+above change.
+
+The above also reverts the need to use custom built `.so` to make things work
+for `glibc`, because previously Alpine needed them.
+
+Also target specific Scala versions to build for, and now Scala version is part
+of the Docker image tag.
+
+No changes to env vars.
+
+- Distro: Debian
+- Advertized CLI tools:
+  - `gosu`
+  - `tini`
+  - `conda`
+- Advertized JARs for Hadoop:
+  - Hadoop AWS SDK
+  - AWS Java SDK Bundle
+  - GCS Connector
+  - MariaDB Connector
+  - Postgres JDBC
+- Advertized additional scripts:
+  - `"${AIRFLOW_HOME}/setup_auth.py"`
+  - `"${AIRFLOW_HOME}/test_db_conn.py"`
+    - Suffice to just run `python "${AIRFLOW_HOME}/test_db_conn.py"` as it will
+      automatically take the `('core', 'sql_alchemy_conn')` Airflow conf value.
+      Both setting via env var `AIRFLOW__CORE__SQL_ALCHEMY_CONN` (this takes
+      precedence) and `airflow.cfg` conf file would work.
+- Advertized env vars:
+  - `ENABLE_AIRFLOW_ADD_USER_GROUP="true"`
+    - Default to `"true"`. Add Airflow user and group based on `AIRFLOW_USER`
+      and `AIRFLOW_GROUP`. If set to `"false"`, you are likely and should set
+      `ENABLE_AIRFLOW_CHOWN` to `"false"`.
+  - `ENABLE_AIRFLOW_CHOWN="true"`
+    - Default to `"true"`. Allow entrypoint to perform recursive `chown` to
+      `${AIRFLOW_USER}:${AIRFLOW_GROUP}` on `${AIRFLOW_HOME}` directory.
+  - `ENABLE_AIRFLOW_TEST_DB_CONN="true"`
+    - Default to `"true"`. Enable database test connection before running any
+      other Airflow commands.
+  - `ENABLE_AIRFLOW_INITDB="false"`
+  - `ENABLE_AIRFLOW_WEBSERVER_LOG="false"`
+  - `ENABLE_AIRFLOW_SETUP_AUTH="false"`
+  - `AIRFLOW_USER=airflow`
+  - `AIRFLOW_GROUP=airflow`
+  - `HADOOP_HOME="/opt/hadoop"`
+  - `HADOOP_CONF_DIR="/opt/hadoop/etc/hadoop"`
+  - `AIRFLOW_HOME="/airflow"`
+  - `AIRFLOW_DAG="${AIRFLOW_HOME}/dags"`
+  - `PYTHONPATH="${PYTHONPATH}:${AIRFLOW_HOME}/config"`
+  - `PYSPARK_SUBMIT_ARGS="--py-files ${SPARK_HOME}/python/lib/pyspark.zip pyspark-shell"`
+
 ## v4
 
 The following env vars are renamed:
