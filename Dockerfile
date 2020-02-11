@@ -127,6 +127,8 @@ RUN set -euo pipefail && \
             "flask-bcrypt=${FLASK_BCRYPT_NORM_VERSION}" \
             ; \
     fi; \
+    ## Need to fix werkzeug <https://stackoverflow.com/a/60104502>
+    conda install -p "${CONDA_PREFIX}" -y "werkzeug>=0.15,<0.17"; \
     conda clean -a -y; \
     :
 
