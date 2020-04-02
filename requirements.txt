@@ -1,2 +1,5 @@
 future==0.16.0
 flask_bcrypt==0.7.1
+kaggle == 1.5.6
+praw == 6.5.1
+py4j == 0.10.7

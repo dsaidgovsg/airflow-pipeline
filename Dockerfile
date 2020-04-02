@@ -1,4 +1,4 @@
-FROM python:2.7-stretch AS no-spark
+FROM python:3.5-stretch AS no-spark
 
 # Setup airflow
 RUN set -ex \
@@ -14,7 +14,7 @@ RUN set -ex \
         /var/tmp/* \
         /usr/share/doc \
         /usr/share/doc-base \
-    && pip install --no-cache-dir "apache-airflow[devel_hadoop,crypto,celery,redis,postgres,jdbc,ssh]==1.10.3" psycopg2
+    && pip install --no-cache-dir "apache-airflow[devel_hadoop,crypto,celery,redis,postgres,jdbc,ssh]==1.10.9" psycopg2
 
 ARG airflow_home=/airflow
 ENV AIRFLOW_HOME=${airflow_home}
@@ -23,8 +23,10 @@ WORKDIR ${AIRFLOW_HOME}
 
 # Setup airflow dags path
 ENV AIRFLOW_DAG=${AIRFLOW_HOME}/dags
+ENV AIRFLOW_PLUGINS=${AIRFLOW_HOME}/plugins
 
 RUN mkdir -p ${AIRFLOW_DAG}
+RUN mkdir -p ${AIRFLOW_PLUGINS}
 
 COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 COPY unittests.cfg ${AIRFLOW_HOME}/unittests.cfg
@@ -44,10 +46,10 @@ ENV SCHEDULER_RUNS=${scheduler_runs}
 ARG airflow__core__parallelism=8
 ENV AIRFLOW__CORE__PARALLELISM=${airflow__core__parallelism}
 # dag_concurrency = the number of TIs to be allowed to run PER-dag at once
-ARG airflow__core__dag_concurrency=6
+ARG airflow__core__dag_concurrency=2
 ENV AIRFLOW__CORE__DAG_CONCURRENCY=${airflow__core__dag_concurrency}
 # max_threads = number of processes to parallelize the scheduler over, cannot exceed the cpu count
-ARG airflow__scheduler__max_threads=4
+ARG airflow__scheduler__max_threads=1
 ENV AIRFLOW__SCHEDULER__MAX_THREADS=${airflow__scheduler__max_threads}
 
 ENV AIRFLOW__CORE__EXECUTOR=LocalExecutor
@@ -74,8 +76,8 @@ RUN apt-get update \
 
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
-ARG SPARK_VERSION=2.1.2
-ARG HADOOP_VERSION=2.6.5
+ARG SPARK_VERSION=2.4.1
+ARG HADOOP_VERSION=2.7.3
 ARG SPARK_PY4J=python/lib/py4j-0.10.4-src.zip
 
 ARG hadoop_home=/opt/hadoop
@@ -110,3 +112,4 @@ FROM with-spark-optional-dag AS with-spark
 
 ## To build your own image:
 ONBUILD COPY dags/ ${AIRFLOW_DAG}
+ONBUILD COPY plugins/ ${AIRFLOW_PLUGINS}
