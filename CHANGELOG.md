@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## v6
+
+Change base image, therefore dropping `conda` and now comes with `pyenv`.
+
+Remove all build args to control non-critical `pip` package versions, which
+include:
+
+- `boto3`
+- `cryptography`
+- `psycopg2`
+- `flask-bcrypt`
+
+This is allow `pip` to have flexibility to choose the appropriate versions to
+prevent version compabilities across all the packages.
+
 ## v5
 
 The only change from `v4` is the distro has been changed from Alpine to Debian,

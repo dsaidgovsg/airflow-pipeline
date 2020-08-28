@@ -17,7 +17,7 @@ Note that this repo is actually a fork of
 in order to do build matrix to generate Docker images with varying application
 versions.
 
-Additionally, Conda and specialized environment are being used to perform all
+Additionally, `pyenv` and specialized environment are being used to perform all
 Python related installations, so that it is easy to generate images with
 specific Python versions without conflicting dependency package versions.
 

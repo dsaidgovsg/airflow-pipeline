@@ -1,9 +1,10 @@
-ARG BASE_VERSION=v2
-ARG SPARK_VERSION=
-ARG HADOOP_VERSION=
-ARG SCALA_VERSION=
+ARG BASE_VERSION=v3
+ARG SPARK_VERSION
+ARG HADOOP_VERSION
+ARG SCALA_VERSION
+ARG PYTHON_VERSION
 
-FROM guangie88/spark-k8s-addons:${BASE_VERSION}_${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_scala-${SCALA_VERSION} AS base
+FROM dsaidgovsg/spark-k8s-addons:${BASE_VERSION}_${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_scala-${SCALA_VERSION}_python-${PYTHON_VERSION} AS base
 
 # Airflow will run as root instead of the spark 185 user meant for k8s
 USER root
@@ -15,14 +16,6 @@ RUN set -euo pipefail && \
 	rm -rf /var/lib/apt/lists/*; \
     # Verify that the binary works
 	gosu nobody true; \
-    :
-
-# Set up tini
-ARG TINI_VERSION=0.18.0
-ADD https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static-amd64 /usr/local/bin/tini
-RUN set -euo pipefail && \
-    chmod +x /usr/local/bin/tini; \
-    tini --version >/dev/null; \
     :
 
 # Set up Hadoop
@@ -37,7 +30,7 @@ ENV HADOOP_CONF_DIR="${HADOOP_CONF_DIR}"
 
 RUN set -euo pipefail && \
     mkdir -p "$(dirname "${HADOOP_HOME}")"; \
-    wget "https://archive.apache.org/dist/hadoop/core/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz"; \
+    curl -LO "https://archive.apache.org/dist/hadoop/core/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz"; \
     tar xf "hadoop-${HADOOP_VERSION}.tar.gz"; \
     mv "hadoop-${HADOOP_VERSION}" "${HADOOP_HOME}"; \
     rm "hadoop-${HADOOP_VERSION}.tar.gz"; \
@@ -45,10 +38,10 @@ RUN set -euo pipefail && \
     ## AWS S3 JARs
     ## Get the aws-java-sdk version dynamic based on Hadoop version
     ## Do not use head -n1 because it will trigger 141 exit code due to early return on pipe
-    AWS_JAVA_SDK_VERSION="$(wget -qO- https://raw.githubusercontent.com/apache/hadoop/branch-${HADOOP_VERSION}/hadoop-project/pom.xml | grep -A1 aws-java-sdk | grep -oE "[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+" | tr "\r\n" " " | cut -d " " -f 1)"; \
+    AWS_JAVA_SDK_VERSION="$(curl https://raw.githubusercontent.com/apache/hadoop/branch-${HADOOP_VERSION}/hadoop-project/pom.xml | grep -A1 aws-java-sdk | grep -oE "[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+" | tr "\r\n" " " | cut -d " " -f 1)"; \
     cd "${HADOOP_HOME}/share/hadoop/hdfs/"; \
-    wget "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/${HADOOP_VERSION}/hadoop-aws-${HADOOP_VERSION}.jar"; \
-    wget "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/${AWS_JAVA_SDK_VERSION}/aws-java-sdk-bundle-${AWS_JAVA_SDK_VERSION}.jar"; \
+    curl -LO "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/${HADOOP_VERSION}/hadoop-aws-${HADOOP_VERSION}.jar"; \
+    curl -LO "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/${AWS_JAVA_SDK_VERSION}/aws-java-sdk-bundle-${AWS_JAVA_SDK_VERSION}.jar"; \
     cd -; \
     printf "\
 <?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n\
@@ -60,76 +53,67 @@ RUN set -euo pipefail && \
 </configuration>\n" > ${HADOOP_CONF_DIR}/core-site.xml; \
     ## Google Storage JAR
     cd "${HADOOP_HOME}/share/hadoop/hdfs/"; \
-    wget https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop2-latest.jar; \
+    curl -LO https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop2-latest.jar; \
     cd -; \
     cd "${HADOOP_HOME}/share/hadoop/tools/lib"; \
     ## MariaDB JAR
-    wget https://downloads.mariadb.com/Connectors/java/connector-java-2.4.0/mariadb-java-client-2.4.0.jar; \
+    curl -LO https://downloads.mariadb.com/Connectors/java/connector-java-2.4.0/mariadb-java-client-2.4.0.jar; \
     ## Postgres JDBC JAR
-    wget https://jdbc.postgresql.org/download/postgresql-42.2.9.jar; \
+    curl -LO https://jdbc.postgresql.org/download/postgresql-42.2.9.jar; \
     cd -; \
     :
 
 ENV PATH="${PATH}:${HADOOP_HOME}/bin"
 
-# Set up Airflow via conda
+# Set up Airflow via pip
 ARG AIRFLOW_VERSION
 ENV AIRFLOW_VERSION="${AIRFLOW_VERSION}"
 
 ARG SQLALCHEMY_VERSION
 ENV SQLALCHEMY_VERSION="${SQLALCHEMY_VERSION}"
 
-ARG PYTHON_VERSION
-
-ARG BOTO3_VERSION="1.9"
-ARG CRYPTOGRAPHY_VERSION="2.8"
-ARG PSYCOPG2_VERSION="2.8"
-ARG FLASK_BCRYPT_VERSION="0.7"
-
 RUN set -euo pipefail && \
     # Airflow and SQLAlchemy
+    # Postgres dev prereqs to install Airflow
+    apt-get update; \
+    apt-get install -y --no-install-recommends libpq5 libpq-dev; \
     ## These two version numbers can take MAJ.MIN[.PAT]
+    if [ -z "${AIRFLOW_VERSION}" ]; then >&2 echo "Please specify AIRFLOW_VERSION" && exit 1; fi; \
+    if [ -v "${SQLALCHEMY_VERSION}" ]; then >&2 echo "Please specify SQLALCHEMY_VERSION" && exit 1; fi; \
     AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
-    BOTO3_NORM_VERSION="$(printf "%s.%s" "${BOTO3_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
-    CRYPTOGRAPHY_NORM_VERSION="$(printf "%s.%s" "${CRYPTOGRAPHY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
-    PSYCOPG2_NORM_VERSION="$(printf "%s.%s" "${PSYCOPG2_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
-    FLASK_BCRYPT_NORM_VERSION="$(printf "%s.%s" "${FLASK_BCRYPT_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     if [[ "${AIRFLOW_NORM_VERSION}" == "1.9.*" ]]; then \
-        conda install -p "${CONDA_PREFIX}" -y \
-            "python=${PYTHON_VERSION}" \
-            "airflow=${AIRFLOW_NORM_VERSION}" \
-            "airflow-with-celery=${AIRFLOW_NORM_VERSION}" \
-            "airflow-with-crypto=${AIRFLOW_NORM_VERSION}" \
-            "airflow-with-dask=${AIRFLOW_NORM_VERSION}" \
-            "airflow-with-s3=${AIRFLOW_NORM_VERSION}" \
-            "airflow-with-slack=${AIRFLOW_NORM_VERSION}" \
-            "sqlalchemy=${SQLALCHEMY_NORM_VERSION}" \
-            "boto3=${BOTO3_NORM_VERSION}" \
-            "cryptography=${CRYPTOGRAPHY_NORM_VERSION}" \
-            "psycopg2=${PSYCOPG2_NORM_VERSION}" \
-            "flask-bcrypt=${FLASK_BCRYPT_NORM_VERSION}" \
+        pip install --no-cache-dir \
+            "apache-airflow[celery,crypto,dask,s3,slack]==${AIRFLOW_NORM_VERSION}" \
+            "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
+            "boto3" \
+            "cryptography" \
+            "psycopg2" \
+            "flask-bcrypt" \
+            ## Need to fix werkzeug <https://stackoverflow.com/a/60459142>
+            "werkzeug<1.0" \
+            ## To prevent dep incompatibility for pip check
+            "websocket-client>=0.35,<0.55.0" \
+            "distributed<1.24" \
             ; \
     else \
-        conda install -p "${CONDA_PREFIX}" -y \
-            "python=${PYTHON_VERSION}" \
-            "airflow=${AIRFLOW_NORM_VERSION}" \
-            "airflow-with-celery=${AIRFLOW_NORM_VERSION}" \
-            "airflow-with-crypto=${AIRFLOW_NORM_VERSION}" \
-            "airflow-with-dask=${AIRFLOW_NORM_VERSION}" \
-            "airflow-with-kubernetes=${AIRFLOW_NORM_VERSION}" \
-            "airflow-with-s3=${AIRFLOW_NORM_VERSION}" \
-            "airflow-with-slack=${AIRFLOW_NORM_VERSION}" \
-            "sqlalchemy=${SQLALCHEMY_NORM_VERSION}" \
-            "boto3=${BOTO3_NORM_VERSION}" \
-            "cryptography=${CRYPTOGRAPHY_NORM_VERSION}" \
-            "psycopg2=${PSYCOPG2_NORM_VERSION}" \
-            "flask-bcrypt=${FLASK_BCRYPT_NORM_VERSION}" \
+        pip install --no-cache-dir \
+            "apache-airflow[celery,crypto,dask,kubernetes,s3,slack]==${AIRFLOW_NORM_VERSION}" \
+            "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
+            "boto3" \
+            "cryptography" \
+            "psycopg2" \
+            "flask-bcrypt" \
+            ## Need to fix werkzeug <https://stackoverflow.com/a/60459142>
+            "werkzeug<1.0" \
+            ## To prevent dep incompatibility for pip check
+            "websocket-client>=0.35,<0.55.0" \
             ; \
     fi; \
-    ## Need to fix werkzeug <https://stackoverflow.com/a/60104502>
-    conda install -p "${CONDA_PREFIX}" -y "werkzeug>=0.15,<0.17"; \
-    conda clean -a -y; \
+    pip check; \
+    ## Clean up dev files and only retain the runtime of Postgres lib
+    apt-get remove -y libpq-dev; \
+    rm -rf /var/lib/apt/lists/*; \
     :
 
 ARG AIRFLOW_HOME=/airflow

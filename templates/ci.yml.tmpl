@@ -37,7 +37,7 @@ jobs:
     env:
       IMAGE_NAME: airflow-pipeline
       SELF_VERSION: "{{ self_version }}"
-      BASE_VERSION: "v2"
+      BASE_VERSION: "v3"
       {% raw -%}
       AIRFLOW_VERSION: "${{ matrix.version.airflow }}"
       SPARK_VERSION: "${{ matrix.version.spark }}"
@@ -48,7 +48,7 @@ jobs:
       {%- endraw %}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Install tera-cli
       run: |-
         wget https://github.com/guangie88/tera-cli/releases/download/v0.4.0/tera_linux_amd64 -O /tmp/tera
