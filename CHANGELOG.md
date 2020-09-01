@@ -1,5 +1,40 @@
 # CHANGELOG
 
+## v7
+
+Same as [v6](#v6), but change base image again to use the native Python without
+`pyenv`. Add `poetry` to properly manage pip dependency management. All
+installations should be done only via `poetry`, and not via raw `pip`.
+
+- Advertized CLI tools:
+  - `gosu`
+  - `tini`
+  - `poetry` (`cd` to `${POETRY_SYSTEM_PROJECT_DIR}` before installing)
+
+Advertized new env vars.
+No changes to previous set of env vars, but the following are newly added:
+
+- `POETRY_SYSTEM_PROJECT_DIR`
+- `POETRY_HOME`
+- `ENABLE_AIRFLOW_RBAC_SETUP_AUTH`, defaults to `"false"` in `entrypoint.sh`.
+  Even if it set to true, it is only effective if `AIRFLOW__WEBSERVER__RBAC` is
+  also set to `"true"`, since `airflow.cfg` needs to know if RBAC should be
+  enabled.
+
+  The following env vars are required when `ENABLE_AIRFLOW_RBAC_SETUP_AUTH` is
+  set to `"true`:
+
+  - `AIRFLOW_WEBSERVER_RBAC_ROLE`, defaults to `Admin`.
+  - `AIRFLOW_WEBSERVER_RBAC_USER`
+  - `AIRFLOW_WEBSERVER_RBAC_PASSWORD`
+  - `AIRFLOW_WEBSERVER_RBAC_EMAIL`
+  - `AIRFLOW_WEBSERVER_RBAC_FIRST_NAME`
+  - `AIRFLOW_WEBSERVER_RBAC_LAST_NAME`
+
+  Note that using RBAC makes the previous `ENABLE_AIRFLOW_SETUP_AUTH` set-up
+  irrelevant, since the login mechanism in newer Airflow has two different
+  bifurcated set-ups.
+
 ## v6
 
 Change base image, therefore dropping `conda` and now comes with `pyenv`.
@@ -14,6 +49,11 @@ include:
 
 This is allow `pip` to have flexibility to choose the appropriate versions to
 prevent version compabilities across all the packages.
+
+Changes to advertized CLI tools:
+
+- No more `conda`, due to the switch of image to use `pyenv`. Thus `pip` is now
+  the de-facto package installer.
 
 ## v5
 

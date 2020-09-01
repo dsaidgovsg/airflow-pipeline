@@ -19,4 +19,12 @@ services:
       AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
       AIRFLOW__CORE__EXECUTOR: SequentialExecutor
       AIRFLOW__SCHEDULER__MAX_THREADS: "1"
+      # Enable RBAC since this is now the recommended default UI mode
+      AIRFLOW__WEBSERVER__RBAC: "true"
+      ENABLE_AIRFLOW_RBAC_SETUP_AUTH: "true"
+      AIRFLOW_WEBSERVER_RBAC_USER: admin
+      AIRFLOW_WEBSERVER_RBAC_PASSWORD: Password123
+      AIRFLOW_WEBSERVER_RBAC_EMAIL: admin-san@xyz.com
+      AIRFLOW_WEBSERVER_RBAC_FIRST_NAME: admin
+      AIRFLOW_WEBSERVER_RBAC_LAST_NAME: san
     restart: always

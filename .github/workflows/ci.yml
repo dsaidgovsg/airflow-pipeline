@@ -142,8 +142,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: airflow-pipeline
-      SELF_VERSION: "v6"
-      BASE_VERSION: "v3"
+      SELF_VERSION: "v7"
+      BASE_VERSION: "v4"
       AIRFLOW_VERSION: "${{ matrix.version.airflow }}"
       SPARK_VERSION: "${{ matrix.version.spark }}"
       HADOOP_VERSION: "${{ matrix.version.hadoop }}"

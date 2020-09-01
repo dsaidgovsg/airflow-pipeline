@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+check_set () {
+  [ "$1" = "true" ] || [ "$1" = "True" ]
+}
+
 # Set to "false" to disable the following env vars
 ENABLE_AIRFLOW_ADD_USER_GROUP="${ENABLE_AIRFLOW_ADD_USER_GROUP:-true}"
 ENABLE_AIRFLOW_CHOWN="${ENABLE_AIRFLOW_CHOWN:-true}"
@@ -10,9 +14,14 @@ ENABLE_AIRFLOW_TEST_DB_CONN="${ENABLE_AIRFLOW_TEST_DB_CONN:-true}"
 ENABLE_AIRFLOW_INITDB="${ENABLE_AIRFLOW_INITDB:-false}"
 ENABLE_AIRFLOW_WEBSERVER_LOG="${ENABLE_AIRFLOW_WEBSERVER_LOG:-false}"
 ENABLE_AIRFLOW_SETUP_AUTH="${ENABLE_AIRFLOW_SETUP_AUTH:-false}"
+ENABLE_AIRFLOW_RBAC_SETUP_AUTH="${ENABLE_AIRFLOW_RBAC_SETUP_AUTH:-false}"
+
+# Other good defaults
+## https://airflow.apache.org/docs/stable/security.html?highlight=ldap#default-roles
+AIRFLOW_WEBSERVER_RBAC_ROLE="${AIRFLOW_WEBSERVER_RBAC_ROLE:-Admin}"
 
 # Set up default user and group for running Airflow
-if [ "${ENABLE_AIRFLOW_ADD_USER_GROUP}" = "true" ] || [ "${ENABLE_AIRFLOW_ADD_USER_GROUP}" = "True" ]; then
+if check_set "${ENABLE_AIRFLOW_ADD_USER_GROUP}"; then
   AIRFLOW_USER="${AIRFLOW_USER:-airflow}"
   AIRFLOW_GROUP="${AIRFLOW_GROUP:-airflow}"
 
@@ -26,7 +35,7 @@ else
 fi
 
 # This possibly changes the log directory that might be mounted in
-if [ "${ENABLE_AIRFLOW_CHOWN}" = "true" ] || [ "${ENABLE_AIRFLOW_CHOWN}" = "True" ]; then
+if check_set "${ENABLE_AIRFLOW_CHOWN}"; then
   echo "Chowning ${AIRFLOW_HOME} to ${AIRFLOW_USER}:${AIRFLOW_GROUP}..."
   chown "${AIRFLOW_USER}:${AIRFLOW_GROUP}" -R "${AIRFLOW_HOME}/"
   echo "Chowning done!"
@@ -42,21 +51,20 @@ fi
 SPARK_DIST_CLASSPATH="$(hadoop classpath)"
 export SPARK_DIST_CLASSPATH
 
-if [ "${ENABLE_AIRFLOW_TEST_DB_CONN}" = "true" ] || [ "${ENABLE_AIRFLOW_TEST_DB_CONN}" = "True" ]; then
+if check_set "${ENABLE_AIRFLOW_TEST_DB_CONN}"; then
   echo "Testing database connection for Airflow..."
   gosu "${AIRFLOW_USER}" python test_db_conn.py
   echo "Database connection test successful!"
 fi
 
-
 # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
-if [ "${ENABLE_AIRFLOW_INITDB}" = "true" ] || [ "${ENABLE_AIRFLOW_INITDB}" = "True" ]; then
+if check_set "${ENABLE_AIRFLOW_INITDB}"; then
   echo "Initializing database for Airflow..."
   gosu "${AIRFLOW_USER}" airflow initdb
   echo "Database is initialized with Airflow metadata!"
 fi
 
-if [ "${ENABLE_AIRFLOW_SETUP_AUTH}" = "true" ] || [ "${ENABLE_AIRFLOW_SETUP_AUTH}" = "True" ]; then
+if check_set "${ENABLE_AIRFLOW_SETUP_AUTH}"; then
   echo "Adding admin user for Airflow Web UI login..."
   gosu "${AIRFLOW_USER}" python "${AIRFLOW_HOME}/setup_auth.py" \
     -u "${AIRFLOW_WEBSERVER_USER}" \
@@ -65,8 +73,26 @@ if [ "${ENABLE_AIRFLOW_SETUP_AUTH}" = "true" ] || [ "${ENABLE_AIRFLOW_SETUP_AUTH
   echo "Admin user added!"
 fi
 
+# We assume the the patch/Z version is at least 11, based on the current edit
+# Thus it will definitely have both the RBAC and create_user features
+AIRFLOW_VERSION="$(airflow version)"
+AIRFLOW_Y_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 2)"
+
+# Requires 'rbac' mode to be set to true to run the command properly
+if check_set "${ENABLE_AIRFLOW_RBAC_SETUP_AUTH}" && [ "${AIRFLOW_Y_VERSION}" -eq 10 ]; then
+  echo "Adding user for Airflow Web UI RBAC login..."
+  gosu "${AIRFLOW_USER}" airflow create_user \
+    -r "${AIRFLOW_WEBSERVER_RBAC_ROLE}" \
+    -u "${AIRFLOW_WEBSERVER_RBAC_USER}" \
+    -p "${AIRFLOW_WEBSERVER_RBAC_PASSWORD}" \
+    -e "${AIRFLOW_WEBSERVER_RBAC_EMAIL}" \
+    -f "${AIRFLOW_WEBSERVER_RBAC_FIRST_NAME}" \
+    -l "${AIRFLOW_WEBSERVER_RBAC_LAST_NAME}"
+  echo "User "${AIRFLOW_WEBSERVER_RBAC_USER}" of role "${AIRFLOW_WEBSERVER_RBAC_ROLE}" added!"
+fi
+
 # Start webserver as background process first
-if [ "${ENABLE_AIRFLOW_WEBSERVER_LOG}" = "true" ] || [ "${ENABLE_AIRFLOW_WEBSERVER_LOG}" = "True" ]; then
+if check_set "${ENABLE_AIRFLOW_WEBSERVER_LOG}"; then
   echo "Starting webserver with logging..."
   gosu "${AIRFLOW_USER}" airflow webserver &
 else

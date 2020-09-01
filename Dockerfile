@@ -1,4 +1,4 @@
-ARG BASE_VERSION=v3
+ARG BASE_VERSION=v4
 ARG SPARK_VERSION
 ARG HADOOP_VERSION
 ARG SCALA_VERSION
@@ -63,9 +63,9 @@ RUN set -euo pipefail && \
     cd -; \
     :
 
-ENV PATH="${PATH}:${HADOOP_HOME}/bin"
+# ENV PATH="${PATH}:${HADOOP_HOME}/bin"
 
-# Set up Airflow via pip
+# Set up Airflow via poetry
 ARG AIRFLOW_VERSION
 ENV AIRFLOW_VERSION="${AIRFLOW_VERSION}"
 
@@ -76,43 +76,43 @@ RUN set -euo pipefail && \
     # Airflow and SQLAlchemy
     # Postgres dev prereqs to install Airflow
     apt-get update; \
-    apt-get install -y --no-install-recommends libpq5 libpq-dev; \
+    apt-get install -y --no-install-recommends build-essential libpq5 libpq-dev; \
     ## These two version numbers can take MAJ.MIN[.PAT]
     if [ -z "${AIRFLOW_VERSION}" ]; then >&2 echo "Please specify AIRFLOW_VERSION" && exit 1; fi; \
     if [ -v "${SQLALCHEMY_VERSION}" ]; then >&2 echo "Please specify SQLALCHEMY_VERSION" && exit 1; fi; \
     AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
+    pushd "${POETRY_SYSTEM_PROJECT_DIR}"; \
     if [[ "${AIRFLOW_NORM_VERSION}" == "1.9.*" ]]; then \
-        pip install --no-cache-dir \
+        poetry add \
             "apache-airflow[celery,crypto,dask,s3,slack]==${AIRFLOW_NORM_VERSION}" \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
             "cryptography" \
             "psycopg2" \
             "flask-bcrypt" \
+            # Required due to poetry issue https://github.com/python-poetry/poetry/issues/1287
+            "python3-openid" \
             ## Need to fix werkzeug <https://stackoverflow.com/a/60459142>
             "werkzeug<1.0" \
-            ## To prevent dep incompatibility for pip check
-            "websocket-client>=0.35,<0.55.0" \
-            "distributed<1.24" \
             ; \
     else \
-        pip install --no-cache-dir \
+        poetry add \
             "apache-airflow[celery,crypto,dask,kubernetes,s3,slack]==${AIRFLOW_NORM_VERSION}" \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
             "cryptography" \
             "psycopg2" \
             "flask-bcrypt" \
+            # Required due to poetry issue https://github.com/python-poetry/poetry/issues/1287
+            "python3-openid" \
             ## Need to fix werkzeug <https://stackoverflow.com/a/60459142>
             "werkzeug<1.0" \
-            ## To prevent dep incompatibility for pip check
-            "websocket-client>=0.35,<0.55.0" \
             ; \
     fi; \
-    pip check; \
+    popd; \
     ## Clean up dev files and only retain the runtime of Postgres lib
-    apt-get remove -y libpq-dev; \
+    apt-get remove -y build-essential libpq-dev; \
     rm -rf /var/lib/apt/lists/*; \
     :
 

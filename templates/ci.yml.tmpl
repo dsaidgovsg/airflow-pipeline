@@ -37,7 +37,7 @@ jobs:
     env:
       IMAGE_NAME: airflow-pipeline
       SELF_VERSION: "{{ self_version }}"
-      BASE_VERSION: "v3"
+      BASE_VERSION: "v4"
       {% raw -%}
       AIRFLOW_VERSION: "${{ matrix.version.airflow }}"
       SPARK_VERSION: "${{ matrix.version.spark }}"

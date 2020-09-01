@@ -51,7 +51,11 @@ You will need `docker-compose` and `docker` command installed.
 docker-compose up --build
 ```
 
-Navigate to `http://localhost:8080/` to try out the DAGs.
+Navigate to `http://localhost:8080/`, and log in using the following RBAC
+credentials to try out the DAGs:
+
+- Username: `admin`
+- Password: `Password123`
 
 Note that the `webserver` logs are suppressed by default.
 
@@ -106,14 +110,16 @@ Example build command:
 
 ```bash
 AIRFLOW_VERSION=1.10
-SPARK_VERSION=3.0.0-preview2-rc2
+SPARK_VERSION=3.0.0
 HADOOP_VERSION=3.2.0
+SCALA_VERSION=2.12
 PYTHON_VERSION=3.6
 SQLALCHEMY_VERSION=1.3
 docker build -t airflow-pipeline \
   --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
   --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
   --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
+  --build-arg "SCALA_VERSION=${SCALA_VERSION}" \
   --build-arg "PYTHON_VERSION=${PYTHON_VERSION}" \
   --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}" \
   .
