@@ -17,9 +17,12 @@ Note that this repo is actually a fork of
 in order to do build matrix to generate Docker images with varying application
 versions.
 
-Additionally, `pyenv` and specialized environment are being used to perform all
-Python related installations, so that it is easy to generate images with
-specific Python versions without conflicting dependency package versions.
+Additionally, `poetry` is used to perform all Python related installations at a
+predefined global project directory, so that it is easy to add on new packages
+without conflicting dependency package versions, which raw `pip` cannot achieve.
+See
+<https://github.com/dsaidgovsg/spark-k8s-addons#how-to-properly-manage-pip-packages>
+for more information.
 
 Also, for convenience, the current version runs both the `webserver` and
 `scheduler` together in the same instance by the default entrypoint, with the
