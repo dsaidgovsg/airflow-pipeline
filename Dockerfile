@@ -63,7 +63,7 @@ RUN set -euo pipefail && \
     cd -; \
     :
 
-# ENV PATH="${PATH}:${HADOOP_HOME}/bin"
+ENV PATH="${PATH}:${HADOOP_HOME}/bin"
 
 # Set up Airflow via poetry
 ARG AIRFLOW_VERSION
