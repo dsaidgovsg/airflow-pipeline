@@ -12,6 +12,7 @@ ENABLE_AIRFLOW_TEST_DB_CONN="${ENABLE_AIRFLOW_TEST_DB_CONN:-true}"
 
 # Set to "true" to enable the following env vars
 ENABLE_AIRFLOW_INITDB="${ENABLE_AIRFLOW_INITDB:-false}"
+ENABLE_AIRFLOW_UPGRADEDB="${ENABLE_AIRFLOW_UPGRADEDB:-false}"
 ENABLE_AIRFLOW_WEBSERVER_LOG="${ENABLE_AIRFLOW_WEBSERVER_LOG:-false}"
 ENABLE_AIRFLOW_SETUP_AUTH="${ENABLE_AIRFLOW_SETUP_AUTH:-false}"
 ENABLE_AIRFLOW_RBAC_SETUP_AUTH="${ENABLE_AIRFLOW_RBAC_SETUP_AUTH:-false}"
@@ -62,6 +63,12 @@ if check_set "${ENABLE_AIRFLOW_INITDB}"; then
   echo "Initializing database for Airflow..."
   gosu "${AIRFLOW_USER}" airflow initdb
   echo "Database is initialized with Airflow metadata!"
+fi
+
+if check_set "${ENABLE_AIRFLOW_UPGRADEDB}"; then
+  echo "Upgrading database schema for Airflow..."
+  gosu "${AIRFLOW_USER}" airflow upgradedb
+  echo "Database is upgraded with latest Airflow metadata schema!"
 fi
 
 if check_set "${ENABLE_AIRFLOW_SETUP_AUTH}"; then

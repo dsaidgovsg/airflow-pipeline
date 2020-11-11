@@ -16,6 +16,7 @@ No changes to previous set of env vars, but the following are newly added:
 
 - `POETRY_SYSTEM_PROJECT_DIR`
 - `POETRY_HOME`
+- `ENABLE_AIRFLOW_INITDB`, defaults to `"false"` in `entrypoint.sh`.
 - `ENABLE_AIRFLOW_RBAC_SETUP_AUTH`, defaults to `"false"` in `entrypoint.sh`.
   Even if it set to true, it is only effective if `AIRFLOW__WEBSERVER__RBAC` is
   also set to `"true"`, since `airflow.cfg` needs to know if RBAC should be
