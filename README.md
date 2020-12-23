@@ -149,12 +149,10 @@ S3_LOG_FOLDER: s3://yourbucket/path/to/your/dir
 ## Caveat
 
 Because this image is based on Spark with Kubernetes compatible image, which
-always generates Alpine based Docker images, the images generated from this
-repository are likely to stay Alpine based as well.
-
-However, note that there is no guarantee that this is always true, and any GNU
-tool can break due to discrepancy between Alpine and other distributions such as
-Debian.
+always generates Debian based Docker images, the images generated from this
+repository are likely to stay Debian based as well. But note that there is no
+guarantee that this is always true, but such changes are always marked with
+Docker image release tag.
 
 Also, currently the default entrypoint without command logic assumes that
 a Postgres server will always be used (the default `sqlite` can work as an
