@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        version:
+{%- for v in versions %}
+{%- for airflow in v.airflow %}
+{%- for spark in v.spark %}
+{%- for hadoop in v.hadoop %}
+{%- for scala in v.scala %}
+{%- for python in v.python %}
+{%- for sqlalchemy in v.sqlalchemy %}
+        - airflow:    "{{ airflow }}"
+          spark:      "{{ spark }}"
+          hadoop:     "{{ hadoop }}"
+          scala:      "{{ scala }}"
+          python:     "{{ python }}"
+          sqlalchemy: "{{ sqlalchemy }}"
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: airflow-pipeline
+      SELF_VERSION: "{{ self_version }}"
+      BASE_VERSION: "{{ base_version }}"
+      {% raw -%}
+      AIRFLOW_VERSION: "${{ matrix.version.airflow }}"
+      SPARK_VERSION: "${{ matrix.version.spark }}"
+      HADOOP_VERSION: "${{ matrix.version.hadoop }}"
+      SCALA_VERSION: "${{ matrix.version.scala }}"
+      PYTHON_VERSION: "${{ matrix.version.python }}"
+      SQLALCHEMY_VERSION: "${{ matrix.version.sqlalchemy }}"
+      {%- endraw %}
+    steps:
+    - name: Set global environment variables
+      run: |-
+        echo "TAG_NAME=${SELF_VERSION}_${AIRFLOW_VERSION}_spark-${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_scala-${SCALA_VERSION}_python-${PYTHON_VERSION}_sqlalchemy-${SQLALCHEMY_VERSION}" >> $GITHUB_ENV
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Install tera-cli
+      run: |-
+        wget https://github.com/guangie88/tera-cli/releases/download/v0.4.0/tera_linux_amd64 -O /tmp/tera
+        chmod +x /tmp/tera
+    - name: Check differences between ci.yml and ci.yml.tmpl
+      run: |-
+        cp .github/workflows/ci.yml .github/workflows/ci.yml.backup
+        TERA=/tmp/tera ./templates/apply-vars.sh
+        if ! diff .github/workflows/ci.yml .github/workflows/ci.yml.backup; then echo "ci.yml.tmpl and ci.yml differs!" && exit 1; fi
+    - name: Build Docker image
+      run: |-
+        docker build . -t "${IMAGE_NAME}:${TAG_NAME}" \
+          --build-arg "BASE_VERSION=${BASE_VERSION}" \
+          --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
+          --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
+          --build-arg "SCALA_VERSION=${SCALA_VERSION}" \
+          --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
+          --build-arg "PYTHON_VERSION=${PYTHON_VERSION}" \
+          --build-arg "SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION}"
+    - name: Push Docker image
+      run: bash push-images.sh
+      env:
+        {% raw -%}
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        IMAGE_ORG: ${{ secrets.IMAGE_ORG }}
+        {%- endraw %}
+      if: github.event_name == 'push'

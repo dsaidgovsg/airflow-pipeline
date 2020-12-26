@@ -1,87 +1,112 @@
 #!/bin/bash
 set -euo pipefail
 
-export SPARK_DIST_CLASSPATH=$(hadoop classpath)
-WAIT_TIMEOUT=60
-
-getent group ${GROUP} || groupadd -r ${GROUP}
-id ${USER} || useradd -rmg ${GROUP} ${USER}
-
-echo "Running as: ${USER}"
-if [ "${USER}" != "root" ]; then
-  echo "Changing owner of files in ${AIRFLOW_HOME} to ${USER}"
-  chown -R "${USER}" ${AIRFLOW_HOME} || true
-fi
-
-SQL_ALCHEMY_CONN_PARTS_REGEX='postgresql://\([-a-zA-Z0-9_]\+\):\([[:print:]]\+\)@\([-a-zA-Z0-9_\.]\+\):\([0-9]\+\)/\([[:print:]]\+\)'
-export POSTGRES_USER=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${SQL_ALCHEMY_CONN_PARTS_REGEX}'#\1#')
-export POSTGRES_PASSWORD=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${SQL_ALCHEMY_CONN_PARTS_REGEX}'#\2#')
-export POSTGRES_HOST=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${SQL_ALCHEMY_CONN_PARTS_REGEX}'#\3#')
-export POSTGRES_PORT=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${SQL_ALCHEMY_CONN_PARTS_REGEX}'#\4#')
-export POSTGRES_DB=$(echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | sed -e 's#'${SQL_ALCHEMY_CONN_PARTS_REGEX}'#\5#')
-
-wait_for_service() {
-  set +e
-  local name="$1" host="$2" port="$3"
-  local device="/dev/tcp/${host}/${port}"
-  timeout $WAIT_TIMEOUT bash <<EOT
-while ! (echo > "${device}") >/dev/null 2>&1; do
-    echo "Waiting for ${name} ${device}"
-    sleep 2;
-done;
-EOT
-  result=$?
-
-  if [ ${result} -eq 0 ]; then
-    echo "${name} available"
-  else
-    echo "${name} is not available"
-    exit 1
-  fi
-  set -e
+check_set () {
+  [ "$1" = "true" ] || [ "$1" = "True" ]
 }
 
-wait_for_postgres() {
-  if [ "$AIRFLOW__CORE__EXECUTOR" != "SequentialExecutor" ]; then
-    export AIRFLOW__CELERY__RESULT_BACKEND="db+postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
-    wait_for_service "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
-  fi
-}
+# Set to "false" to disable the following env vars
+ENABLE_AIRFLOW_ADD_USER_GROUP="${ENABLE_AIRFLOW_ADD_USER_GROUP:-true}"
+ENABLE_AIRFLOW_CHOWN="${ENABLE_AIRFLOW_CHOWN:-true}"
+ENABLE_AIRFLOW_TEST_DB_CONN="${ENABLE_AIRFLOW_TEST_DB_CONN:-true}"
 
-wait_for_redis() {
-  if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
-    CELERY_CONN_PARTS_REGEX='\([[:print:]]\+\)://\([[:print:]]\+\)@\([-a-zA-Z0-9_\.]\+\):\([0-9]\+\)/\([[:print:]]\+\)'
-    export CELERY_PROTO=$(echo $AIRFLOW__CELERY__BROKER_URL | sed -e 's#'${CELERY_CONN_PARTS_REGEX}'#\1#')
-    export CELERY_HOST=$(echo $AIRFLOW__CELERY__BROKER_URL | sed -e 's#'${CELERY_CONN_PARTS_REGEX}'#\3#')
-    export CELERY_PORT=$(echo $AIRFLOW__CELERY__BROKER_URL | sed -e 's#'${CELERY_CONN_PARTS_REGEX}'#\4#')
-    wait_for_service "$CELERY_PROTO" "$CELERY_HOST" "$CELERY_PORT"
-  fi
-}
+# Set to "true" to enable the following env vars
+ENABLE_AIRFLOW_INITDB="${ENABLE_AIRFLOW_INITDB:-false}"
+ENABLE_AIRFLOW_UPGRADEDB="${ENABLE_AIRFLOW_UPGRADEDB:-false}"
+ENABLE_AIRFLOW_WEBSERVER_LOG="${ENABLE_AIRFLOW_WEBSERVER_LOG:-false}"
+ENABLE_AIRFLOW_SETUP_AUTH="${ENABLE_AIRFLOW_SETUP_AUTH:-false}"
+ENABLE_AIRFLOW_RBAC_SETUP_AUTH="${ENABLE_AIRFLOW_RBAC_SETUP_AUTH:-false}"
 
+# Other good defaults
+## https://airflow.apache.org/docs/stable/security.html?highlight=ldap#default-roles
+AIRFLOW_WEBSERVER_RBAC_ROLE="${AIRFLOW_WEBSERVER_RBAC_ROLE:-Admin}"
 
-if [ "$1" = 'afp-scheduler' ]; then
-  wait_for_postgres
-  wait_for_redis
-  if [ "$AIRFLOW_SCHEDULER_INITDB" = "true" ]; then
-    gosu "${USER}" airflow initdb
-  fi
-  (while :; do echo 'Serving logs'; gosu "${USER}" airflow serve_logs; sleep 1; done) &
-  (while :; do echo 'Starting scheduler'; gosu "${USER}" airflow scheduler -n ${SCHEDULER_RUNS}; sleep 1; done)
-elif [ "$1" = 'afp-webserver' ]; then
-  wait_for_postgres
-  gosu "${USER}" airflow create_user -r Admin -u ${AIRFLOW_USER} -p ${AIRFLOW_PASSWORD} -e ${AIRFLOW_EMAIL} -f ${AIRFLOW_USER} -l Admin || true
-  echo "Starting webserver"
-  exec gosu "${USER}" airflow webserver
-elif [ "$1" = 'afp-flower' ]; then
-  wait_for_postgres
-  wait_for_redis
-  echo "Starting flower"
-  exec gosu "${USER}" airflow flower
-elif [ "$1" = 'afp-worker' ]; then
-  wait_for_postgres
-  wait_for_redis
-  echo "Starting worker"
-  exec gosu "${USER}" airflow worker
+# Set up default user and group for running Airflow
+if check_set "${ENABLE_AIRFLOW_ADD_USER_GROUP}"; then
+  AIRFLOW_USER="${AIRFLOW_USER:-airflow}"
+  AIRFLOW_GROUP="${AIRFLOW_GROUP:-airflow}"
+
+  echo "Adding Airflow user \"${AIRFLOW_USER}\" and group \"${AIRFLOW_GROUP}\"..."
+  addgroup "${AIRFLOW_GROUP}"
+  adduser --gecos "" --disabled-password --ingroup "${AIRFLOW_GROUP}" "${AIRFLOW_USER}"
+  echo "Airflow user and group added successfully!"
 else
-  exec gosu "${USER}" "$@"
+  AIRFLOW_USER="$(id -nu)"
+  AIRFLOW_GROUP="$(id -ng)"
 fi
+
+# This possibly changes the log directory that might be mounted in
+if check_set "${ENABLE_AIRFLOW_CHOWN}"; then
+  echo "Chowning ${AIRFLOW_HOME} to ${AIRFLOW_USER}:${AIRFLOW_GROUP}..."
+  chown "${AIRFLOW_USER}:${AIRFLOW_GROUP}" -R "${AIRFLOW_HOME}/"
+  echo "Chowning done!"
+fi
+
+# This "early returns" so that it gives bash-like effect when we don't want to
+# do Airflow related operations
+if [ "$#" -ne 0 ]; then
+  exec tini -- gosu "${AIRFLOW_USER}" "$@"
+fi
+
+# To include Hadoop JAR classes for Spark usage
+SPARK_DIST_CLASSPATH="$(hadoop classpath)"
+export SPARK_DIST_CLASSPATH
+
+if check_set "${ENABLE_AIRFLOW_TEST_DB_CONN}"; then
+  echo "Testing database connection for Airflow..."
+  gosu "${AIRFLOW_USER}" python test_db_conn.py
+  echo "Database connection test successful!"
+fi
+
+# https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
+if check_set "${ENABLE_AIRFLOW_INITDB}"; then
+  echo "Initializing database for Airflow..."
+  gosu "${AIRFLOW_USER}" airflow initdb
+  echo "Database is initialized with Airflow metadata!"
+fi
+
+if check_set "${ENABLE_AIRFLOW_UPGRADEDB}"; then
+  echo "Upgrading database schema for Airflow..."
+  gosu "${AIRFLOW_USER}" airflow upgradedb
+  echo "Database is upgraded with latest Airflow metadata schema!"
+fi
+
+if check_set "${ENABLE_AIRFLOW_SETUP_AUTH}"; then
+  echo "Adding admin user for Airflow Web UI login..."
+  gosu "${AIRFLOW_USER}" python "${AIRFLOW_HOME}/setup_auth.py" \
+    -u "${AIRFLOW_WEBSERVER_USER}" \
+    -e "${AIRFLOW_WEBSERVER_EMAIL}" \
+    -p "${AIRFLOW_WEBSERVER_PASSWORD}"
+  echo "Admin user added!"
+fi
+
+# We assume the the patch/Z version is at least 11, based on the current edit
+# Thus it will definitely have both the RBAC and create_user features
+AIRFLOW_VERSION="$(airflow version)"
+AIRFLOW_Y_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 2)"
+
+# Requires 'rbac' mode to be set to true to run the command properly
+if check_set "${ENABLE_AIRFLOW_RBAC_SETUP_AUTH}" && [ "${AIRFLOW_Y_VERSION}" -eq 10 ]; then
+  echo "Adding user for Airflow Web UI RBAC login..."
+  gosu "${AIRFLOW_USER}" airflow create_user \
+    -r "${AIRFLOW_WEBSERVER_RBAC_ROLE}" \
+    -u "${AIRFLOW_WEBSERVER_RBAC_USER}" \
+    -p "${AIRFLOW_WEBSERVER_RBAC_PASSWORD}" \
+    -e "${AIRFLOW_WEBSERVER_RBAC_EMAIL}" \
+    -f "${AIRFLOW_WEBSERVER_RBAC_FIRST_NAME}" \
+    -l "${AIRFLOW_WEBSERVER_RBAC_LAST_NAME}"
+  echo "User "${AIRFLOW_WEBSERVER_RBAC_USER}" of role "${AIRFLOW_WEBSERVER_RBAC_ROLE}" added!"
+fi
+
+# Start webserver as background process first
+if check_set "${ENABLE_AIRFLOW_WEBSERVER_LOG}"; then
+  echo "Starting webserver with logging..."
+  gosu "${AIRFLOW_USER}" airflow webserver &
+else
+  echo "Starting webserver without logging..."
+  gosu "${AIRFLOW_USER}" airflow webserver >/dev/null &
+fi
+
+# Then start scheduler as foreground
+echo "Starting scheduler..."
+exec tini -- gosu "${AIRFLOW_USER}" airflow scheduler

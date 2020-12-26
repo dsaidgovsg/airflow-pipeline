@@ -1,53 +1,30 @@
 version: '2.3'
 services:
-  postgres:
-    image: postgres:9.6
-    restart: always
-    volumes:
-      - postgres:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: fixme
-      POSTGRES_PASSWORD: fixme
-      POSTGRES_DB: airflow
-
-  scheduler:
+  airflow:
     build:
       context: .
-      target: with-spark-optional-dag
       dockerfile: Dockerfile
-    restart: always
-    depends_on:
-      - postgres
-    environment:
-      AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@postgres:5432/airflow
-      PYSPARK_SUBMIT_ARGS: --driver-memory 16g --packages com.databricks:spark-csv_2.10:1.5.0,com.databricks:spark-avro_2.10:2.0.1,graphframes:graphframes:0.1.0-spark1.6 pyspark-shell
-#      PYSPARK_SUBMIT_ARGS: --driver-memory 16g --packages com.databricks:spark-csv_2.11:1.5.0,com.databricks:spark-avro_2.11:3.1.0,graphframes:graphframes:0.3.0-spark2.0-s_2.11 pyspark-shell
-      PYSPARK_PYTHON: /usr/local/bin/python2.7
-      PIPELINE_DATA_PATH: hdfs://dsg-cluster-gw01/datasets/finnet
-      PIPELINE_DATA_FORMAT: com.databricks.spark.avro
-    command: afp-scheduler
-    volumes:
-      - airflow_logs:/airflow/logs
-  webserver:
-    build:
-      context: .
-      target: with-spark-optional-dag
-      dockerfile: Dockerfile
-    restart: always
-    depends_on:
-      - scheduler
-    environment:
-      AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@postgres:5432/airflow
-      AIRFLOW_USER: fixme
-      AIRFLOW_EMAIL: fixme@fix.me
-      AIRFLOW_PASSWORD: fixme
+      args:
+        AIRFLOW_VERSION: "1.10"
+        SPARK_VERSION: "2.4.5"
+        HADOOP_VERSION: "3.1.0"
+        SCALA_VERSION: "2.12"
+        PYTHON_VERSION: "3.7"
+        SQLALCHEMY_VERSION: "1.3"
     ports:
-      - 127.0.0.1:8080:8080
-    command: afp-webserver
-    volumes_from:
-      - scheduler
-volumes:
-  postgres: {}
-  airflow_logs: {}
+      - 8080:8080
+    environment:
+      # This uses sqlite as database by default
+      ENABLE_AIRFLOW_INITDB: "true"
+      AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__SCHEDULER__MAX_THREADS: "1"
+      # Enable RBAC since this is now the recommended default UI mode
+      AIRFLOW__WEBSERVER__RBAC: "true"
+      ENABLE_AIRFLOW_RBAC_SETUP_AUTH: "true"
+      AIRFLOW_WEBSERVER_RBAC_USER: admin
+      AIRFLOW_WEBSERVER_RBAC_PASSWORD: Password123
+      AIRFLOW_WEBSERVER_RBAC_EMAIL: admin-san@xyz.com
+      AIRFLOW_WEBSERVER_RBAC_FIRST_NAME: admin
+      AIRFLOW_WEBSERVER_RBAC_LAST_NAME: san
+    restart: always

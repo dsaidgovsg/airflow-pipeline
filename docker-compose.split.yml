@@ -1,0 +1,45 @@
+version: '2'
+services:
+  postgres:
+    image: postgres:9.6
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: fixme
+      POSTGRES_PASSWORD: fixme
+      POSTGRES_DB: airflow
+    restart: always
+  scheduler:
+    depends_on:
+      - postgres
+    build: &build
+      context: .
+      dockerfile: Dockerfile
+      args:
+        AIRFLOW_VERSION: "1.10"
+        SPARK_VERSION: "3.0.0-preview2-rc2"
+        HADOOP_VERSION: "3.2.0"
+        PYTHON_VERSION: "3.6"
+        SQLALCHEMY_VERSION: "1.3"
+    command: ["bash", "-c", "python test_db_conn.py && airflow initdb && airflow scheduler"]
+    volumes:
+      - airflow_logs:/airflow/logs/
+    environment: &environment
+      AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@postgres:5432/airflow
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    restart: always
+  webserver:
+    depends_on:
+      - postgres
+    build: *build
+    command: ["bash", "-c", "sleep 7 && airflow webserver"]
+    ports:
+      - 8080:8080
+    volumes:
+      - airflow_logs:/airflow/logs/
+    environment: *environment
+    restart: always
+volumes:
+  postgres: {}
+  airflow_logs: {}
