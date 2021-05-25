@@ -24,6 +24,12 @@ See
 <https://github.com/dsaidgovsg/spark-k8s-addons#how-to-properly-manage-pip-packages>
 for more information.
 
+For builds involving Airflow v2 onwards, note that `poetry` is not supported 
+as an installation tool.
+See <https://github.com/apache/airflow/issues/13149> for a related discussion 
+and how to resolve possible conflicts when installing packages on top of this 
+base image.
+
 Also, for convenience, the current version runs both the `webserver` and
 `scheduler` together in the same instance by the default entrypoint, with the
 `webserver` being at the background and `scheduler` at the foreground. All the
@@ -133,18 +139,10 @@ possible build arguments to combine.
 
 ## Entrypoint
 
-## Additional Useful Perks
-
-There is already an AWS S3 log configuration file in this set-up.
-
-If you wish to save the Airflow logs into S3 bucket instead, provide the
-following environment variables when launcher the Docker container:
-
-```yml
-AIRFLOW__CORE__TASK_LOG_READER: s3.task
-AIRFLOW__CORE__LOGGING_CONFIG_CLASS: s3_log_config.LOGGING_CONFIG
-S3_LOG_FOLDER: s3://yourbucket/path/to/your/dir
-```
+The default entrypoint script will run Airflow default setups and checks which
+can be controlled via env vars, then run both the webserver (in the background) 
+and the scheduler (in the foreground).
+See [`entrypoint.sh`](entrypoint.sh) for more details.
 
 ## Caveat
 

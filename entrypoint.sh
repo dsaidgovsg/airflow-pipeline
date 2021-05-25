@@ -61,13 +61,13 @@ fi
 # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
 if check_set "${ENABLE_AIRFLOW_INITDB}"; then
   echo "Initializing database for Airflow..."
-  gosu "${AIRFLOW_USER}" airflow initdb
+  gosu "${AIRFLOW_USER}" airflow initdb || gosu "${AIRFLOW_USER}" airflow db init
   echo "Database is initialized with Airflow metadata!"
 fi
 
 if check_set "${ENABLE_AIRFLOW_UPGRADEDB}"; then
   echo "Upgrading database schema for Airflow..."
-  gosu "${AIRFLOW_USER}" airflow upgradedb
+  gosu "${AIRFLOW_USER}" airflow upgradedb|| gosu "${AIRFLOW_USER}" airflow db upgrade
   echo "Database is upgraded with latest Airflow metadata schema!"
 fi
 
@@ -83,18 +83,31 @@ fi
 # We assume the the patch/Z version is at least 11, based on the current edit
 # Thus it will definitely have both the RBAC and create_user features
 AIRFLOW_VERSION="$(airflow version)"
+AIRFLOW_X_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 1)"
 AIRFLOW_Y_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 2)"
 
+echo "${AIRFLOW_VERSION}, ${AIRFLOW_X_VERSION}, ${AIRFLOW_Y_VERSION}"
+
 # Requires 'rbac' mode to be set to true to run the command properly
-if check_set "${ENABLE_AIRFLOW_RBAC_SETUP_AUTH}" && [ "${AIRFLOW_Y_VERSION}" -eq 10 ]; then
+if check_set "${ENABLE_AIRFLOW_RBAC_SETUP_AUTH}"; then
   echo "Adding user for Airflow Web UI RBAC login..."
-  gosu "${AIRFLOW_USER}" airflow create_user \
-    -r "${AIRFLOW_WEBSERVER_RBAC_ROLE}" \
-    -u "${AIRFLOW_WEBSERVER_RBAC_USER}" \
-    -p "${AIRFLOW_WEBSERVER_RBAC_PASSWORD}" \
-    -e "${AIRFLOW_WEBSERVER_RBAC_EMAIL}" \
-    -f "${AIRFLOW_WEBSERVER_RBAC_FIRST_NAME}" \
-    -l "${AIRFLOW_WEBSERVER_RBAC_LAST_NAME}"
+  if [ "${AIRFLOW_X_VERSION}" == "1" ] && [ "${AIRFLOW_Y_VERSION}" -ge "10" ]; then
+    gosu "${AIRFLOW_USER}" airflow create_user \
+         -r "${AIRFLOW_WEBSERVER_RBAC_ROLE}" \
+         -u "${AIRFLOW_WEBSERVER_RBAC_USER}" \
+         -p "${AIRFLOW_WEBSERVER_RBAC_PASSWORD}" \
+         -e "${AIRFLOW_WEBSERVER_RBAC_EMAIL}" \
+         -f "${AIRFLOW_WEBSERVER_RBAC_FIRST_NAME}" \
+         -l "${AIRFLOW_WEBSERVER_RBAC_LAST_NAME}"
+  elif [ "${AIRFLOW_X_VERSION}" -ge "2" ]; then
+    gosu "${AIRFLOW_USER}" airflow users create \
+         -r "${AIRFLOW_WEBSERVER_RBAC_ROLE}" \
+         -u "${AIRFLOW_WEBSERVER_RBAC_USER}" \
+         -p "${AIRFLOW_WEBSERVER_RBAC_PASSWORD}" \
+         -e "${AIRFLOW_WEBSERVER_RBAC_EMAIL}" \
+         -f "${AIRFLOW_WEBSERVER_RBAC_FIRST_NAME}" \
+         -l "${AIRFLOW_WEBSERVER_RBAC_LAST_NAME}"
+  fi
   echo "User "${AIRFLOW_WEBSERVER_RBAC_USER}" of role "${AIRFLOW_WEBSERVER_RBAC_ROLE}" added!"
 fi
 
