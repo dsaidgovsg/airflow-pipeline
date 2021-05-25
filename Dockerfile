@@ -83,9 +83,16 @@ RUN set -euo pipefail && \
     AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     pushd "${POETRY_SYSTEM_PROJECT_DIR}"; \
-    if [[ "${AIRFLOW_NORM_VERSION}" == "1.9.*" ]]; then \
+    if [[ "${AIRFLOW_NORM_VERSION}" == "2.1.*" ]]; then \
         poetry add \
-            "apache-airflow[celery,crypto,dask,s3,slack]==${AIRFLOW_NORM_VERSION}" \
+            "apache-airflow==${AIRFLOW_NORM_VERSION}" \
+            "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
+            "boto3" \
+            "psycopg2" \
+            ; \
+    elif [[ "${AIRFLOW_NORM_VERSION}" == "1.9.*" ]]; then \
+        poetry add \
+            "apache-airflow==${AIRFLOW_NORM_VERSION}" \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
             "cryptography" \
@@ -98,7 +105,7 @@ RUN set -euo pipefail && \
             ; \
     else \
         poetry add \
-            "apache-airflow[celery,crypto,dask,kubernetes,s3,slack]==${AIRFLOW_NORM_VERSION}" \
+            "apache-airflow==${AIRFLOW_NORM_VERSION}" \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
             "cryptography" \
@@ -136,9 +143,5 @@ RUN mkdir -p "${AIRFLOW_DAG}"
 
 COPY setup_auth.py test_db_conn.py ${AIRFLOW_HOME}/
 
-# For S3 logging feature
-COPY ./config/ "${AIRFLOW_HOME}/config/"
-
 # All the other env vars that don't affect the build here
-ENV PYTHONPATH="${PYTHONPATH}:${AIRFLOW_HOME}/config"
 ENV PYSPARK_SUBMIT_ARGS="--py-files ${SPARK_HOME}/python/lib/pyspark.zip pyspark-shell"

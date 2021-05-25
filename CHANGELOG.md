@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## v8
+
+Add Airflow builds for v2.1.0.
+
+Remove support for builds with Airflow v1.9 and Spark v2.
+
+Update `entrypoint.sh` to support the new version of Airflow.
+
+### BREAKING CHANGES:
+
+`ENABLE_AIRFLOW_RBAC_SETUP_AUTH` takes on a different meaning for Airflow V2,
+as only the RBAC UI is available in V2 while RBAC and non-RBAC UI is available
+in V1. In V2, it creates a user with the given env vars.
+
+Early return if Docker commands are supplied is shifted to after Airflow util
+setups like `airflow db upgrade`, `airflow db init` etc. in `entrypoint.sh`
+
+`ENABLE_AIRFLOW_TEST_DB_CONN` default value is now "false" instead of "true"
+
+Remove installation of Airflow provider packages in the base image. They have
+to be manually added back.
+
+Remove logging config. Now instead of `S3_LOG_FOLDER` for S3 logging, use:
+- `AIRFLOW__CORE__REMOTE_BASE_LOG_FOLDER` for v1.x Airflow
+- `AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER` for v2.x Airflow
+
 ## v7
 
 Same as [v6](#v6), but change base image again to use the native Python without
