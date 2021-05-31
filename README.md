@@ -12,11 +12,6 @@ as below:
 - Python
 - SQL Alchemy
 
-Note that this repo is actually a fork of
-<https://github.com/dsaidgovsg/airflow-pipeline>, but has been heavily revamped
-in order to do build matrix to generate Docker images with varying application
-versions.
-
 Additionally, `poetry` is used to perform all Python related installations at a
 predefined global project directory, so that it is easy to add on new packages
 without conflicting dependency package versions, which raw `pip` cannot achieve.
@@ -24,11 +19,15 @@ See
 <https://github.com/dsaidgovsg/spark-k8s-addons#how-to-properly-manage-pip-packages>
 for more information.
 
-For builds involving Airflow v2 onwards, note that `poetry` is not supported 
-as an installation tool.
-See <https://github.com/apache/airflow/issues/13149> for a related discussion 
-and how to resolve possible conflicts when installing packages on top of this 
+For builds involving Airflow v2 onwards, note that `poetry` is not officially
+supported as an installation tool, but it is used anyway to make sure dependencies
+are compatible and tested to work across multiple builds with different versions.
+
+See <https://github.com/apache/airflow/issues/13149> for a related discussion
+and how to resolve possible conflicts when installing packages on top of this
 base image.
+
+## Entrypoint
 
 Also, for convenience, the current version runs both the `webserver` and
 `scheduler` together in the same instance by the default entrypoint, with the
@@ -46,11 +45,14 @@ The above convenience functionalities include:
 2. Automatically running `airflow initdb`
 3. Easy creation of Airflow Web UI admin user by simple env vars.
 
+See [`entrypoint.sh`](entrypoint.sh) for more details
+and the list of convenient environment variables.
+
 Also note that the command that will be run will also be run as `airflow`
 user/group, unless the host overrides the user/group to run the Docker
 container.
 
-## Commands to demo
+## Running locally
 
 You will need `docker-compose` and `docker` command installed.
 
@@ -136,13 +138,6 @@ docker build -t airflow-pipeline \
 
 You may refer to the [vars.yml](templates/vars.yml) to have a sensing of all the
 possible build arguments to combine.
-
-## Entrypoint
-
-The default entrypoint script will run Airflow default setups and checks which
-can be controlled via env vars, then run both the webserver (in the background) 
-and the scheduler (in the foreground).
-See [`entrypoint.sh`](entrypoint.sh) for more details.
 
 ## Caveat
 
