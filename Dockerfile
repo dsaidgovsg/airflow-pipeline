@@ -89,7 +89,6 @@ RUN set -euo pipefail && \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
             "psycopg2" \
-            "flask-bcrypt" \
             ; \
     elif [[ "${AIRFLOW_NORM_VERSION}" == "1.9.*" ]]; then \
         poetry add \
