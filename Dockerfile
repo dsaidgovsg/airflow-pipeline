@@ -72,9 +72,6 @@ ENV AIRFLOW_VERSION="${AIRFLOW_VERSION}"
 ARG SQLALCHEMY_VERSION
 ENV SQLALCHEMY_VERSION="${SQLALCHEMY_VERSION}"
 
-ARG AIRFLOW_PATCH_VERSION=0
-ENV AIRFLOW_PATCH_VERSION="${AIRFLOW_PATCH_VERSION}"
-
 RUN set -euo pipefail && \
     # Airflow and SQLAlchemy
     # Postgres dev prereqs to install Airflow
@@ -87,13 +84,11 @@ RUN set -euo pipefail && \
     SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     pushd "${POETRY_SYSTEM_PROJECT_DIR}"; \
     if [[ "${AIRFLOW_NORM_VERSION}" == "2.1.*" ]]; then \
-        AIRFLOW_VERSION=${AIRFLOW_NORM_VERSION%?}${AIRFLOW_PATCH_VERSION}; \
         pushd "${POETRY_SYSTEM_PROJECT_DIR}"; \
         poetry add \
-            "apache-airflow==${AIRFLOW_VERSION}" \
+            "apache-airflow[apache.spark,cncf.kubernetes,s3,slack,statsd,]==${AIRFLOW_NORM_VERSION}" \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
-            "cryptography" \
             "psycopg2" \
             "flask-bcrypt" \
             ; \

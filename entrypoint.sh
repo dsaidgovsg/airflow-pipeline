@@ -67,7 +67,7 @@ fi
 
 if check_set "${ENABLE_AIRFLOW_UPGRADEDB}"; then
   echo "Upgrading database schema for Airflow..."
-  gosu "${AIRFLOW_USER}" airflow upgradedb|| gosu "${AIRFLOW_USER}" airflow db upgrade
+  gosu "${AIRFLOW_USER}" airflow upgradedb || gosu "${AIRFLOW_USER}" airflow db upgrade
   echo "Database is upgraded with latest Airflow metadata schema!"
 fi
 
