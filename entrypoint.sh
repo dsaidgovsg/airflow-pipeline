@@ -86,12 +86,10 @@ AIRFLOW_VERSION="$(airflow version)"
 AIRFLOW_X_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 1)"
 AIRFLOW_Y_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 2)"
 
-echo "${AIRFLOW_VERSION}, ${AIRFLOW_X_VERSION}, ${AIRFLOW_Y_VERSION}"
-
 # Requires 'rbac' mode to be set to true to run the command properly
 if check_set "${ENABLE_AIRFLOW_RBAC_SETUP_AUTH}"; then
   echo "Adding user for Airflow Web UI RBAC login..."
-  if [ "${AIRFLOW_X_VERSION}" == "1" ] && [ "${AIRFLOW_Y_VERSION}" -ge "10" ]; then
+  if [ "${AIRFLOW_X_VERSION}" -eq "1" ] && [ "${AIRFLOW_Y_VERSION}" -ge "10" ]; then
     gosu "${AIRFLOW_USER}" airflow create_user \
          -r "${AIRFLOW_WEBSERVER_RBAC_ROLE}" \
          -u "${AIRFLOW_WEBSERVER_RBAC_USER}" \
