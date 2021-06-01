@@ -86,13 +86,16 @@ RUN set -euo pipefail && \
     if [[ "${AIRFLOW_NORM_VERSION}" == "2.1.*" ]]; then \
         poetry add \
             "apache-airflow==${AIRFLOW_NORM_VERSION}" \
+            "apache-airflow-providers-apache-spark" \
+            "apache-airflow-providers-amazon" \
+            "apache-airflow-providers-slack" \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
             "psycopg2" \
             ; \
     elif [[ "${AIRFLOW_NORM_VERSION}" == "1.9.*" ]]; then \
         poetry add \
-            "apache-airflow[celery,crypto,dask,s3,slack]==${AIRFLOW_NORM_VERSION}" \
+            "apache-airflow==${AIRFLOW_NORM_VERSION}" \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
             "cryptography" \
@@ -105,7 +108,7 @@ RUN set -euo pipefail && \
             ; \
     else \
         poetry add \
-            "apache-airflow[celery,crypto,dask,kubernetes,s3,slack]==${AIRFLOW_NORM_VERSION}" \
+            "apache-airflow==${AIRFLOW_NORM_VERSION}" \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
             "cryptography" \

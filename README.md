@@ -108,6 +108,23 @@ set-up will try to also release a new self-version number. But note that this is
 at a best effort scale only because most of the tools are inherited upstream,
 or simply unable / undesirable to specify the version to install.
 
+## Airflow provider packages
+
+Airflow provider packages have been removed from the image from version `v8`
+onwards and users will have to manually install them instead. Note that
+provider packages follow their own versioning independent of Airflow's.
+
+See <https://airflow.apache.org/docs/apache-airflow/2.1.0/backport-providers.html#backport-providers>
+for more details.
+
+```
+# Airflow V2
+poetry add apache-airflow-provider-apache-spark==1.0.3
+
+# Airflow V1
+poetry add apache-airflow[spark]==1.10.z
+```
+
 ## Changelogs
 
 All self-versioned change logs are listed in [`CHANGELOG.md`](CHANGELOG.md).
