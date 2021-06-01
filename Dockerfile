@@ -86,9 +86,6 @@ RUN set -euo pipefail && \
     if [[ "${AIRFLOW_NORM_VERSION}" == "2.1.*" ]]; then \
         poetry add \
             "apache-airflow==${AIRFLOW_NORM_VERSION}" \
-            "apache-airflow-providers-apache-spark" \
-            "apache-airflow-providers-amazon" \
-            "apache-airflow-providers-slack" \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
             "psycopg2" \
