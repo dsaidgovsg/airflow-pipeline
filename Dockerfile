@@ -85,7 +85,7 @@ RUN set -euo pipefail && \
     pushd "${POETRY_SYSTEM_PROJECT_DIR}"; \
     if [[ "${AIRFLOW_NORM_VERSION}" == "2.1.*" ]]; then \
         poetry add \
-            "apache-airflow[apache.spark,cncf.kubernetes,s3,slack,statsd]==${AIRFLOW_NORM_VERSION}" \
+            "apache-airflow[statsd]==${AIRFLOW_NORM_VERSION}" \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
             "psycopg2" \
