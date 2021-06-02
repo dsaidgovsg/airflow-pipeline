@@ -8,7 +8,6 @@ check_set () {
 # Set to "false" to disable the following env vars
 ENABLE_AIRFLOW_ADD_USER_GROUP="${ENABLE_AIRFLOW_ADD_USER_GROUP:-true}"
 ENABLE_AIRFLOW_CHOWN="${ENABLE_AIRFLOW_CHOWN:-true}"
-ENABLE_AIRFLOW_TEST_DB_CONN="${ENABLE_AIRFLOW_TEST_DB_CONN:-true}"
 
 # Set to "true" to enable the following env vars
 ENABLE_AIRFLOW_INITDB="${ENABLE_AIRFLOW_INITDB:-false}"
@@ -16,6 +15,7 @@ ENABLE_AIRFLOW_UPGRADEDB="${ENABLE_AIRFLOW_UPGRADEDB:-false}"
 ENABLE_AIRFLOW_WEBSERVER_LOG="${ENABLE_AIRFLOW_WEBSERVER_LOG:-false}"
 ENABLE_AIRFLOW_SETUP_AUTH="${ENABLE_AIRFLOW_SETUP_AUTH:-false}"
 ENABLE_AIRFLOW_RBAC_SETUP_AUTH="${ENABLE_AIRFLOW_RBAC_SETUP_AUTH:-false}"
+ENABLE_AIRFLOW_TEST_DB_CONN="${ENABLE_AIRFLOW_TEST_DB_CONN:-false}"
 
 # Other good defaults
 ## https://airflow.apache.org/docs/stable/security.html?highlight=ldap#default-roles
@@ -40,12 +40,6 @@ if check_set "${ENABLE_AIRFLOW_CHOWN}"; then
   echo "Chowning ${AIRFLOW_HOME} to ${AIRFLOW_USER}:${AIRFLOW_GROUP}..."
   chown "${AIRFLOW_USER}:${AIRFLOW_GROUP}" -R "${AIRFLOW_HOME}/"
   echo "Chowning done!"
-fi
-
-# This "early returns" so that it gives bash-like effect when we don't want to
-# do Airflow related operations
-if [ "$#" -ne 0 ]; then
-  exec tini -- gosu "${AIRFLOW_USER}" "$@"
 fi
 
 # To include Hadoop JAR classes for Spark usage
@@ -80,8 +74,6 @@ if check_set "${ENABLE_AIRFLOW_SETUP_AUTH}"; then
   echo "Admin user added!"
 fi
 
-# We assume the the patch/Z version is at least 11, based on the current edit
-# Thus it will definitely have both the RBAC and create_user features
 AIRFLOW_VERSION="$(airflow version)"
 AIRFLOW_X_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 1)"
 AIRFLOW_Y_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 2)"
@@ -89,6 +81,7 @@ AIRFLOW_Y_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 2)"
 # Requires 'rbac' mode to be set to true to run the command properly
 if check_set "${ENABLE_AIRFLOW_RBAC_SETUP_AUTH}"; then
   echo "Adding user for Airflow Web UI RBAC login..."
+  # Both RBAC set-up and `create_user` is only available together from v1.10.11 onwards.
   if [ "${AIRFLOW_X_VERSION}" -eq "1" ] && [ "${AIRFLOW_Y_VERSION}" -ge "10" ]; then
     gosu "${AIRFLOW_USER}" airflow create_user \
          -r "${AIRFLOW_WEBSERVER_RBAC_ROLE}" \
@@ -97,6 +90,7 @@ if check_set "${ENABLE_AIRFLOW_RBAC_SETUP_AUTH}"; then
          -e "${AIRFLOW_WEBSERVER_RBAC_EMAIL}" \
          -f "${AIRFLOW_WEBSERVER_RBAC_FIRST_NAME}" \
          -l "${AIRFLOW_WEBSERVER_RBAC_LAST_NAME}"
+  # RBAC UI is the only option available from v2 onwards.
   elif [ "${AIRFLOW_X_VERSION}" -ge "2" ]; then
     gosu "${AIRFLOW_USER}" airflow users create \
          -r "${AIRFLOW_WEBSERVER_RBAC_ROLE}" \
@@ -107,6 +101,12 @@ if check_set "${ENABLE_AIRFLOW_RBAC_SETUP_AUTH}"; then
          -l "${AIRFLOW_WEBSERVER_RBAC_LAST_NAME}"
   fi
   echo "User "${AIRFLOW_WEBSERVER_RBAC_USER}" of role "${AIRFLOW_WEBSERVER_RBAC_ROLE}" added!"
+fi
+
+# This "early returns" so that it gives bash-like effect if more control is required over the
+# default Airflow scheduler + webserver start
+if [ "$#" -ne 0 ]; then
+  exec tini -- gosu "${AIRFLOW_USER}" "$@"
 fi
 
 # Start webserver as background process first

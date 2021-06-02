@@ -8,6 +8,9 @@ Update `entrypoint.sh` to support the new version of Airflow.
 
 BREAKING CHANGES:
 
+Early return if Docker commands are supplied is shifted to after Airflow util
+setups like `airflow db upgrade`, `airflow db init` etc. in `entrypoint.sh`
+`ENABLE_AIRFLOW_TEST_DB_CONN` default value is now "false" instead of "true"
 Remove installation of Airflow provider packages in the base image. They have
 to be manually added back.
 Remove logging config. Now instead of `S3_LOG_FOLDER` for S3 logging, use:
