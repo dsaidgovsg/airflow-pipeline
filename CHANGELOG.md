@@ -8,11 +8,17 @@ Update `entrypoint.sh` to support the new version of Airflow.
 
 BREAKING CHANGES:
 
+`ENABLE_AIRFLOW_RBAC_SETUP_AUTH` takes on a different meaning for Airflow V2,
+as only the RBAC UI is available in V2 while RBAC and non-RBAC UI is available
+in V1. It just means to creating an user for V2 with the given env var values.
+
 Early return if Docker commands are supplied is shifted to after Airflow util
 setups like `airflow db upgrade`, `airflow db init` etc. in `entrypoint.sh`
+
 `ENABLE_AIRFLOW_TEST_DB_CONN` default value is now "false" instead of "true"
 Remove installation of Airflow provider packages in the base image. They have
 to be manually added back.
+
 Remove logging config. Now instead of `S3_LOG_FOLDER` for S3 logging, use:
 `AIRFLOW__CORE__REMOTE_BASE_LOG_FOLDER` for v1.x Airflow
 `AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER` for v2.x Airflow
