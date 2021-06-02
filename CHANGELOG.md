@@ -2,11 +2,13 @@
 
 ## v8
 
-Add Airflow builds for v2.1.0
-Remove support for builds with Airflow v1.9 and Spark v2
+Add Airflow builds for v2.1.0.
+
+Remove support for builds with Airflow v1.9 and Spark v2.
+
 Update `entrypoint.sh` to support the new version of Airflow.
 
-BREAKING CHANGES:
+### BREAKING CHANGES:
 
 `ENABLE_AIRFLOW_RBAC_SETUP_AUTH` takes on a different meaning for Airflow V2,
 as only the RBAC UI is available in V2 while RBAC and non-RBAC UI is available
