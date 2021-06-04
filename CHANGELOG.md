@@ -12,7 +12,7 @@ Update `entrypoint.sh` to support the new version of Airflow.
 
 `ENABLE_AIRFLOW_RBAC_SETUP_AUTH` takes on a different meaning for Airflow V2,
 as only the RBAC UI is available in V2 while RBAC and non-RBAC UI is available
-in V1. It just means to create an user for V2 with the given env vars.
+in V1. In V2, it creates a user with the given env vars.
 
 Early return if Docker commands are supplied is shifted to after Airflow util
 setups like `airflow db upgrade`, `airflow db init` etc. in `entrypoint.sh`
