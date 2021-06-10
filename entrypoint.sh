@@ -38,7 +38,11 @@ fi
 # This possibly changes the log directory that might be mounted in
 if check_set "${ENABLE_AIRFLOW_CHOWN}"; then
   echo "Chowning ${AIRFLOW_HOME} to ${AIRFLOW_USER}:${AIRFLOW_GROUP}..."
-  chown "${AIRFLOW_USER}:${AIRFLOW_GROUP}" -R "${AIRFLOW_HOME}/"
+  mkdir -pv "${AIRFLOW_HOME}/dags"; \
+  mkdir -pv "${AIRFLOW_HOME}/logs"; \
+  chown -R "${AIRFLOW_USER}:${AIRFLOW_GROUP}" "${AIRFLOW_HOME}/"
+  find "${AIRFLOW_HOME}" -executable -print0 | xargs --null chmod g+x && \
+      find "${AIRFLOW_HOME}" -print0 | xargs --null chmod g+rw
   echo "Chowning done!"
 fi
 
