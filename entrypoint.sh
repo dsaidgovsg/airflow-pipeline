@@ -41,8 +41,6 @@ if check_set "${ENABLE_AIRFLOW_CHOWN}"; then
   mkdir -pv "${AIRFLOW_HOME}/dags"; \
   mkdir -pv "${AIRFLOW_HOME}/logs"; \
   chown -R "${AIRFLOW_USER}:${AIRFLOW_GROUP}" "${AIRFLOW_HOME}/"
-  find "${AIRFLOW_HOME}" -executable -print0 | xargs --null chmod g+x && \
-      find "${AIRFLOW_HOME}" -print0 | xargs --null chmod g+rw
   echo "Chowning done!"
 fi
 
@@ -78,7 +76,7 @@ if check_set "${ENABLE_AIRFLOW_SETUP_AUTH}"; then
   echo "Admin user added!"
 fi
 
-AIRFLOW_VERSION="$(airflow version)"
+AIRFLOW_VERSION="$(gosu "${AIRFLOW_USER}" airflow version)"
 AIRFLOW_X_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 1)"
 AIRFLOW_Y_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 2)"
 
