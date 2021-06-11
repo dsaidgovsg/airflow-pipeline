@@ -42,7 +42,7 @@ longer trigger any of the convenient environment variables / functionalities.
 The above convenience functionalities include:
 
 1. Discovering if database (`sqlite` and `postgres`) is ready
-2. Automatically running `airflow initdb`
+2. Automatically running `airflow db init` and `airflow db upgrade`
 3. Easy creation of Airflow Web UI admin user by simple env vars.
 
 See [`entrypoint.sh`](entrypoint.sh) for more details

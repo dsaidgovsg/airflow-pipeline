@@ -29,6 +29,8 @@ if check_set "${ENABLE_AIRFLOW_ADD_USER_GROUP}"; then
   echo "Adding Airflow user \"${AIRFLOW_USER}\" and group \"${AIRFLOW_GROUP}\"..."
   addgroup "${AIRFLOW_GROUP}"
   adduser --gecos "" --disabled-password --ingroup "${AIRFLOW_GROUP}" "${AIRFLOW_USER}"
+  find "${AIRFLOW_HOME}" -executable -print0 | xargs --null chmod g+x && \
+      find "${AIRFLOW_HOME}" -print0 | xargs --null chmod g+rw
   echo "Airflow user and group added successfully!"
 else
   AIRFLOW_USER="$(id -nu)"
@@ -38,7 +40,9 @@ fi
 # This possibly changes the log directory that might be mounted in
 if check_set "${ENABLE_AIRFLOW_CHOWN}"; then
   echo "Chowning ${AIRFLOW_HOME} to ${AIRFLOW_USER}:${AIRFLOW_GROUP}..."
-  chown "${AIRFLOW_USER}:${AIRFLOW_GROUP}" -R "${AIRFLOW_HOME}/"
+  mkdir -pv "${AIRFLOW_HOME}/dags"; \
+  mkdir -pv "${AIRFLOW_HOME}/logs"; \
+  chown -R "${AIRFLOW_USER}:root" "${AIRFLOW_HOME}/"
   echo "Chowning done!"
 fi
 
@@ -74,7 +78,7 @@ if check_set "${ENABLE_AIRFLOW_SETUP_AUTH}"; then
   echo "Admin user added!"
 fi
 
-AIRFLOW_VERSION="$(airflow version)"
+AIRFLOW_VERSION="$(gosu "${AIRFLOW_USER}" airflow version)"
 AIRFLOW_X_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 1)"
 AIRFLOW_Y_VERSION="$(echo ${AIRFLOW_VERSION} | cut -d . -f 2)"
 
