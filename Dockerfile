@@ -1,10 +1,11 @@
-ARG BASE_VERSION=v4
+ARG BASE_VERSION=v5
 ARG SPARK_VERSION
 ARG HADOOP_VERSION
 ARG SCALA_VERSION
+ARG JAVA_VERSION
 ARG PYTHON_VERSION
 
-FROM dsaidgovsg/spark-k8s-addons:${BASE_VERSION}_${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_scala-${SCALA_VERSION}_python-${PYTHON_VERSION} AS base
+FROM dsaidgovsg/spark-k8s-addons:${BASE_VERSION}_${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_scala-${SCALA_VERSION}_java-${JAVA_VERSION}_python-${PYTHON_VERSION} AS base
 
 # Airflow will run as root instead of the spark 185 user meant for k8s
 USER root
