@@ -84,16 +84,29 @@ RUN set -euo pipefail && \
     AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     pushd "${POETRY_SYSTEM_PROJECT_DIR}"; \
-    poetry add \
-        "apache-airflow==${AIRFLOW_NORM_VERSION}" \
-        "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
-        "boto3" \
-        "psycopg2" \
-        # Fixes ImportError: cannot import name 'soft_unicode' from 'markupsafe'
-        # https://github.com/dbt-labs/dbt-core/issues/4745#issuecomment-1044354226
-        "markupsafe==2.0.1" \
-        ; \
-    popd; \
+    if [[ "${AIRFLOW_NORM_VERSION}" == "2.1.*" ]]; then \
+        poetry add \
+            "apache-airflow==${AIRFLOW_NORM_VERSION}" \
+            "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
+            "boto3" \
+            "psycopg2" \
+            # airflow 2.1 does not use markupsafe>=2, nothing to fix
+            # https://github.com/apache/airflow/blob/v2-1-stable/setup.cfg#L122
+            ; \
+        popd; \
+    else \
+        # Airflow >= 2.2
+        poetry add \
+            "apache-airflow==${AIRFLOW_NORM_VERSION}" \
+            "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
+            "boto3" \
+            "psycopg2" \
+            # Fixes ImportError: cannot import name 'soft_unicode' from 'markupsafe'
+            # https://github.com/dbt-labs/dbt-core/issues/4745#issuecomment-1044354226
+            "markupsafe==2.0.1" \
+            ; \
+        popd; \
+    fi; \
     ## Clean up dev files and only retain the runtime of Postgres lib
     apt-get remove -y build-essential libpq-dev; \
     rm -rf /var/lib/apt/lists/*; \
