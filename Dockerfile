@@ -84,40 +84,15 @@ RUN set -euo pipefail && \
     AIRFLOW_NORM_VERSION="$(printf "%s.%s" "${AIRFLOW_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     SQLALCHEMY_NORM_VERSION="$(printf "%s.%s" "${SQLALCHEMY_VERSION}" "*" | cut -d '.' -f1,2,3)"; \
     pushd "${POETRY_SYSTEM_PROJECT_DIR}"; \
-    if [[ "${AIRFLOW_NORM_VERSION}" == "2.1.*" ]]; then \
-        poetry add \
-            "apache-airflow==${AIRFLOW_NORM_VERSION}" \
-            "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
-            "boto3" \
-            "psycopg2" \
-            ; \
-    elif [[ "${AIRFLOW_NORM_VERSION}" == "1.9.*" ]]; then \
-        poetry add \
-            "apache-airflow==${AIRFLOW_NORM_VERSION}" \
-            "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
-            "boto3" \
-            "cryptography" \
-            "psycopg2" \
-            "flask-bcrypt" \
-            # Required due to poetry issue https://github.com/python-poetry/poetry/issues/1287
-            "python3-openid" \
-            ## Need to fix werkzeug <https://stackoverflow.com/a/60459142>
-            "werkzeug<1.0" \
-            ; \
-    else \
-        poetry add \
-            "apache-airflow==${AIRFLOW_NORM_VERSION}" \
-            "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
-            "boto3" \
-            "cryptography" \
-            "psycopg2" \
-            "flask-bcrypt" \
-            # Required due to poetry issue https://github.com/python-poetry/poetry/issues/1287
-            "python3-openid" \
-            ## Need to fix werkzeug <https://stackoverflow.com/a/60459142>
-            "werkzeug<1.0" \
-            ; \
-    fi; \
+    poetry add \
+        "apache-airflow==${AIRFLOW_NORM_VERSION}" \
+        "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
+        "boto3" \
+        "psycopg2" \
+        # Fixes ImportError: cannot import name 'soft_unicode' from 'markupsafe'
+        # https://github.com/dbt-labs/dbt-core/issues/4745#issuecomment-1044354226
+        "markupsafe==2.0.1" \
+        ; \
     popd; \
     ## Clean up dev files and only retain the runtime of Postgres lib
     apt-get remove -y build-essential libpq-dev; \
