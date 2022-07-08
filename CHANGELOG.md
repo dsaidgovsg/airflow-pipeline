@@ -2,7 +2,7 @@
 
 ## v8
 
-Add Airflow builds for v2.1.0.
+Add Airflow builds for v2.2 and v2.3.
 
 Remove support for builds with Airflow v1.9 and Spark v2.
 
