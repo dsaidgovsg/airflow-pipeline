@@ -1,10 +1,11 @@
-ARG BASE_VERSION=v4
+ARG BASE_VERSION=v5
 ARG SPARK_VERSION
 ARG HADOOP_VERSION
 ARG SCALA_VERSION
+ARG JAVA_VERSION
 ARG PYTHON_VERSION
 
-FROM dsaidgovsg/spark-k8s-addons:${BASE_VERSION}_${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_scala-${SCALA_VERSION}_python-${PYTHON_VERSION} AS base
+FROM dsaidgovsg/spark-k8s-addons:${BASE_VERSION}_${SPARK_VERSION}_hadoop-${HADOOP_VERSION}_scala-${SCALA_VERSION}_java-${JAVA_VERSION}_python-${PYTHON_VERSION} AS base
 
 # Airflow will run as root instead of the spark 185 user meant for k8s
 USER root
@@ -89,35 +90,23 @@ RUN set -euo pipefail && \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
             "psycopg2" \
+            # airflow 2.1 does not use markupsafe>=2, nothing to fix
+            # https://github.com/apache/airflow/blob/v2-1-stable/setup.cfg#L122
             ; \
-    elif [[ "${AIRFLOW_NORM_VERSION}" == "1.9.*" ]]; then \
-        poetry add \
-            "apache-airflow==${AIRFLOW_NORM_VERSION}" \
-            "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
-            "boto3" \
-            "cryptography" \
-            "psycopg2" \
-            "flask-bcrypt" \
-            # Required due to poetry issue https://github.com/python-poetry/poetry/issues/1287
-            "python3-openid" \
-            ## Need to fix werkzeug <https://stackoverflow.com/a/60459142>
-            "werkzeug<1.0" \
-            ; \
+        popd; \
     else \
+        # Airflow >= 2.2
         poetry add \
             "apache-airflow==${AIRFLOW_NORM_VERSION}" \
             "sqlalchemy==${SQLALCHEMY_NORM_VERSION}" \
             "boto3" \
-            "cryptography" \
             "psycopg2" \
-            "flask-bcrypt" \
-            # Required due to poetry issue https://github.com/python-poetry/poetry/issues/1287
-            "python3-openid" \
-            ## Need to fix werkzeug <https://stackoverflow.com/a/60459142>
-            "werkzeug<1.0" \
+            # Fixes ImportError: cannot import name 'soft_unicode' from 'markupsafe'
+            # https://github.com/dbt-labs/dbt-core/issues/4745#issuecomment-1044354226
+            "markupsafe==2.0.1" \
             ; \
+        popd; \
     fi; \
-    popd; \
     ## Clean up dev files and only retain the runtime of Postgres lib
     apt-get remove -y build-essential libpq-dev; \
     rm -rf /var/lib/apt/lists/*; \

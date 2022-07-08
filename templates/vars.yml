@@ -1,21 +1,53 @@
 self_version: "v8"
-base_version: "v4"
+base_version: "v5"
 
 versions:
-- airflow:    ["1.10"]
-  spark:      ["3.0.1", "3.0.2"]
+- airflow:    ["2.2"]
+  spark:      ["3.1.3"]
   hadoop:     ["3.2.0"]
   scala:      ["2.12"]
-  python:     ["3.6", "3.7", "3.8"]
-  sqlalchemy: ["1.3"]
+  java:       ["8", "11"]
+  python:     ["3.7", "3.8", "3.9"]
+  sqlalchemy: ["1.3", "1.4"]
 
-- airflow:    ["2.1"]
-  spark:      ["3.0.1", "3.0.2", "3.1.1"]
+- airflow:    ["2.2"]
+  spark:      ["3.2.1"]
+  hadoop:     ["3.3.1"]
+  scala:      ["2.12", "2.13"]
+  java:       ["8", "11"]
+  python:     ["3.7", "3.8", "3.9"]
+  sqlalchemy: ["1.3", "1.4"]
+
+- airflow:    ["2.2"]
+  spark:      ["3.3.0"]
+  hadoop:     ["3.3.2"]
+  scala:      ["2.12", "2.13"]
+  java:       ["8", "11"]
+  python:     ["3.7", "3.8", "3.9"]
+  sqlalchemy: ["1.3", "1.4"]
+
+- airflow:    ["2.3"]
+  spark:      ["3.1.3"]
   hadoop:     ["3.2.0"]
   scala:      ["2.12"]
-  python:     ["3.6", "3.7", "3.8"]
-  sqlalchemy: ["1.3"]
+  java:       ["8", "11"]
+  python:     ["3.7", "3.8", "3.9"]
+  sqlalchemy: ["1.4"]
 
-# The combinations of airflow / python / sqlalchemy are individually tested to
-# make sure that they work
-# Notably, Python 2.7 and 3.5 have no combination that worked
+- airflow:    ["2.3"]
+  spark:      ["3.2.1"]
+  hadoop:     ["3.3.1"]
+  scala:      ["2.12", "2.13"]
+  java:       ["8", "11"]
+  python:     ["3.7", "3.8", "3.9"]
+  sqlalchemy: ["1.4"]
+
+- airflow:    ["2.3"]
+  spark:      ["3.3.0"]
+  hadoop:     ["3.3.2"]
+  scala:      ["2.12", "2.13"]
+  java:       ["8", "11"]
+  python:     ["3.7", "3.8", "3.9"]
+  sqlalchemy: ["1.4"]
+
+# apache-airflow (2.3.0) depends on sqlalchemy (>=1.4,<1.4.10)
