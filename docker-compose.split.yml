@@ -1,4 +1,3 @@
-version: '2'
 services:
   postgres:
     image: postgres:9.6
@@ -8,6 +7,11 @@ services:
       POSTGRES_USER: fixme
       POSTGRES_PASSWORD: fixme
       POSTGRES_DB: airflow
+    healthcheck:
+      test: ["pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: always
   scheduler:
     depends_on:
@@ -16,24 +20,34 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        AIRFLOW_VERSION: "1.10"
-        SPARK_VERSION: "3.0.0-preview2-rc2"
-        HADOOP_VERSION: "3.2.0"
-        PYTHON_VERSION: "3.6"
-        SQLALCHEMY_VERSION: "1.3"
-    command: ["bash", "-c", "python test_db_conn.py && airflow initdb && airflow scheduler"]
+        AIRFLOW_VERSION: "2.3"
+        SPARK_VERSION: "3.3.0"
+        HADOOP_VERSION: "3.3.2"
+        SCALA_VERSION: "2.12"
+        JAVA_VERSION: "11"
+        PYTHON_VERSION: "3.9"
+        SQLALCHEMY_VERSION: "1.4"
+    command: ["bash", "-c", "python test_db_conn.py && airflow db init && airflow scheduler"]
     volumes:
       - airflow_logs:/airflow/logs/
     environment: &environment
+      ENABLE_AIRFLOW_INITDB: "true"
+      ENABLE_AIRFLOW_UPGRADEDB: "true"
       AIRFLOW__CORE__FERNET_KEY: 8NE6O6RcTJpxcCkuKxOHOExzIJkXkeJKbRie03a69dI=
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql://fixme:fixme@postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      ENABLE_AIRFLOW_RBAC_SETUP_AUTH: "true"
+      AIRFLOW_WEBSERVER_RBAC_USER: admin
+      AIRFLOW_WEBSERVER_RBAC_PASSWORD: Password123
+      AIRFLOW_WEBSERVER_RBAC_EMAIL: admin-san@xyz.com
+      AIRFLOW_WEBSERVER_RBAC_FIRST_NAME: admin
+      AIRFLOW_WEBSERVER_RBAC_LAST_NAME: san
     restart: always
   webserver:
     depends_on:
       - postgres
     build: *build
-    command: ["bash", "-c", "sleep 7 && airflow webserver"]
+    command: ["airflow", "webserver"]
     ports:
       - 8080:8080
     volumes:

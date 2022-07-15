@@ -6,7 +6,17 @@ Add Airflow builds for v2.2 and v2.3.
 
 Remove support for builds with Airflow v1.9 and Spark v2.
 
+All previous deprecated commands linked to environment variables are updated:
+
+- `ENABLE_AIRFLOW_INITDB`
+  - `airflow initdb` -> `airflow db init`
+- `ENABLE_AIRFLOW_UPGRADEDB`
+  - `airflow upgradedb` -> `airflow db upgrade`
+
 Update `entrypoint.sh` to support the new version of Airflow.
+
+Fix `entrypoint.sh` to skip creation of `${AIRFLOW_USER}` and `${AIRFLOW_GROUP}`
+if they already exist in the system.
 
 ### BREAKING CHANGES
 
