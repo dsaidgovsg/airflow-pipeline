@@ -26,12 +26,26 @@ if check_set "${ENABLE_AIRFLOW_ADD_USER_GROUP}"; then
   AIRFLOW_USER="${AIRFLOW_USER:-airflow}"
   AIRFLOW_GROUP="${AIRFLOW_GROUP:-airflow}"
 
-  echo "Adding Airflow user \"${AIRFLOW_USER}\" and group \"${AIRFLOW_GROUP}\"..."
-  addgroup "${AIRFLOW_GROUP}"
-  adduser --gecos "" --disabled-password --ingroup "${AIRFLOW_GROUP}" "${AIRFLOW_USER}"
+  # Add group if does not exist yet
+  if ! getent group "${AIRFLOW_GROUP}" >/dev/null; then
+    echo "Adding Airflow group \"${AIRFLOW_GROUP}\"..."
+    addgroup "${AIRFLOW_GROUP}"
+  else
+    echo "Airflow group \"${AIRFLOW_GROUP}\" already exists, ignoring..."
+  fi
+
+  # Add user if does not exist yet
+  if ! getent passwd "${AIRFLOW_USER}" >/dev/null; then
+    echo "Adding Airflow user \"${AIRFLOW_USER}\"..."
+    adduser --gecos "" --disabled-password --ingroup "${AIRFLOW_GROUP}" "${AIRFLOW_USER}"
+  else
+    echo "Airflow user \"${AIRFLOW_USER}\" already exists, ignoring..."
+  fi
+
   find "${AIRFLOW_HOME}" -executable -print0 | xargs --null chmod g+x && \
       find "${AIRFLOW_HOME}" -print0 | xargs --null chmod g+rw
-  echo "Airflow user and group added successfully!"
+
+  echo "Done adding Airflow user and group!"
 else
   AIRFLOW_USER="$(id -nu)"
   AIRFLOW_GROUP="$(id -ng)"
@@ -59,13 +73,13 @@ fi
 # https://groups.google.com/forum/#!topic/airbnb_airflow/4ZGWUzKkBbw
 if check_set "${ENABLE_AIRFLOW_INITDB}"; then
   echo "Initializing database for Airflow..."
-  gosu "${AIRFLOW_USER}" airflow initdb || gosu "${AIRFLOW_USER}" airflow db init
+  gosu "${AIRFLOW_USER}" airflow db init
   echo "Database is initialized with Airflow metadata!"
 fi
 
 if check_set "${ENABLE_AIRFLOW_UPGRADEDB}"; then
   echo "Upgrading database schema for Airflow..."
-  gosu "${AIRFLOW_USER}" airflow upgradedb || gosu "${AIRFLOW_USER}" airflow db upgrade
+  gosu "${AIRFLOW_USER}" airflow db upgrade
   echo "Database is upgraded with latest Airflow metadata schema!"
 fi
 
