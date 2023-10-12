@@ -2,6 +2,8 @@
 
 ## v8
 
+Add support for Spark v3.4.1 and Hadoop 3.3.4
+
 Add Airflow builds for v2.1, v2.2 and v2.3.
 
 Remove support for builds with Airflow v1.9 and Spark v2.
