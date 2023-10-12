@@ -74,6 +74,14 @@ versions:
   python:     ["3.7", "3.8", "3.9"]
   sqlalchemy: ["1.4"]
 
+- airflow:    ["2.3"]
+  spark:      ["3.4.1"]
+  hadoop:     ["3.3.4"]
+  scala:      ["2.12", "2.13"]
+  java:       ["8", "11"]
+  python:     ["3.8", "3.9"]
+  sqlalchemy: ["1.4"]
+
 # Somehow when Airflow 2.1 is paired with Python 3.7, poetry cannot resolve the dependencies
 # So we drop 3.7 for this above combination
 # Also, apache-airflow (2.3.0) depends on sqlalchemy (>=1.4,<1.4.10)
