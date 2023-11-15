@@ -60,7 +60,7 @@ RUN set -euo pipefail && \
     ## MariaDB JAR
     curl -LO https://downloads.mariadb.com/Connectors/java/connector-java-2.4.0/mariadb-java-client-2.4.0.jar; \
     ## Postgres JDBC JAR
-    curl -LO https://jdbc.postgresql.org/download/postgresql-42.2.9.jar; \
+    curl -LO https://jdbc.postgresql.org/download/postgresql-42.6.0.jar; \
     cd -; \
     :
 
