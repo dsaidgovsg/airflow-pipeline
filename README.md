@@ -135,19 +135,20 @@ logs.
 ## How to Manually Build Docker Image
 
 Example build command:
-
 ```bash
 AIRFLOW_VERSION=2.3
-SPARK_VERSION=3.3.0
-HADOOP_VERSION=3.3.2
+SPARK_VERSION=3.4.1
+HIVE_VERSION=3.1.3
+HADOOP_VERSION=3.3.4
 SCALA_VERSION=2.12
-JAVA_VERSION=11
+JAVA_VERSION=8
 PYTHON_VERSION=3.9
 SQLALCHEMY_VERSION=1.4
 docker build -t airflow-pipeline \
   --build-arg "AIRFLOW_VERSION=${AIRFLOW_VERSION}" \
   --build-arg "SPARK_VERSION=${SPARK_VERSION}" \
   --build-arg "HADOOP_VERSION=${HADOOP_VERSION}" \
+  --build-arg "HIVE_VERSION=${HIVE_VERSION}" \
   --build-arg "SCALA_VERSION=${SCALA_VERSION}" \
   --build-arg "PYTHON_VERSION=${PYTHON_VERSION}" \
   --build-arg "JAVA_VERSION=${JAVA_VERSION}" \
